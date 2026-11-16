@@ -8,16 +8,30 @@ describe('the invite link', () => {
     expect(await readInviteToken(SECRET, await inviteToken(SECRET, 'user-1'))).toBe('user-1');
   });
   it('turns away a link signed with another secret', async () => {
-    expect(await readInviteToken('another-secret-entirely-long-enough-here', await inviteToken(SECRET, 'user-1'))).toBeNull();
+    expect(
+      await readInviteToken(
+        'another-secret-entirely-long-enough-here',
+        await inviteToken(SECRET, 'user-1'),
+      ),
+    ).toBeNull();
   });
   it('turns away a link changed to name someone else', async () => {
     const [, signature] = (await inviteToken(SECRET, 'user-1')).split('.');
     expect(await readInviteToken(SECRET, `user-2.${signature}`)).toBeNull();
   });
-  it.each(['', 'user-1', 'user-1.abc', 'user-1.zz', `user-1.${'0'.repeat(64)}`, `user-1.${'0'.repeat(64)}.more`])('turns away %j', async (token) => {
+  it.each([
+    '',
+    'user-1',
+    'user-1.abc',
+    'user-1.zz',
+    `user-1.${'0'.repeat(64)}`,
+    `user-1.${'0'.repeat(64)}.more`,
+  ])('turns away %j', async (token) => {
     expect(await readInviteToken(SECRET, token)).toBeNull();
   });
   it('makes the address on the app host', () => {
-    expect(inviteUrl('https://app.bohdiai.com', 'u.abc')).toBe('https://app.bohdiai.com/auth/invite?t=u.abc');
+    expect(inviteUrl('https://app.bohdiai.com', 'u.abc')).toBe(
+      'https://app.bohdiai.com/auth/invite?t=u.abc',
+    );
   });
 });

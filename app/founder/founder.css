@@ -1,31 +1,180 @@
 /* Alex's admin: the backend's look (backend.css), with a top bar in place of its side menu. */
-.fd { min-height: 100vh; background: var(--bk-ground); }
-.fd-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; max-width: 76rem; padding: 1.25rem var(--bk-gutter) 0; }
-.fd-who { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; font-size: 0.8125rem; color: var(--bk-ink-muted); }
-.fd-out { padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--bk-ink); cursor: pointer; }
-.fd-out:hover { color: var(--bk-primary); }
-.fd-site { display: block; font-weight: 700; }
-.fd-address { color: var(--bk-ink-muted); font-size: 0.8125rem; }
-.fd-address:hover { color: var(--bk-primary); }
-.fd-messages { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
-.fd-message { padding: 1rem 1.15rem; border-radius: var(--bk-radius-sm); background: var(--bk-surface); box-shadow: 0 0 0 1px var(--bk-ink-15); }
-.fd-message-from { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; margin: 0 0 0.5rem; font-size: 0.8125rem; color: var(--bk-ink-muted); }
-.fd-message-from strong { color: var(--bk-ink); }
-.fd-message-text { margin: 0; max-width: 70ch; line-height: 1.5; white-space: pre-wrap; }
-.fd-tiles { margin-bottom: 1.25rem; }
-.fd-tiles .bk-tile { box-shadow: 0 1px 0 var(--bk-ink-15); }
-.fd-cols { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr)); }
-.fd-cols .bk-section { margin: 0; }
-.fd-needs { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; font-weight: 600; }
-.fd-signups { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
-.fd-signups li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.15rem 1rem; }
-.fd-find { max-width: 32rem; margin-bottom: 1.25rem; }
-.fd-find .bk-input { flex: 1; min-width: 0; }
-.fd-form { max-width: 32rem; }
-.fd-form .bk-note, .fd-form .bk-error { margin-top: 0.6rem; }
-.fd-deals { display: grid; gap: 0.25rem; white-space: nowrap; }
-.fd-emails { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr)); }
-.fd-emails .bk-section { margin: 0; }
-.fd-email { display: block; width: 100%; height: 44rem; margin-top: 0.75rem; border: 0; border-radius: var(--bk-radius-sm); background: #0a0805; }
-.fd-wanted { display: grid; gap: 0.4rem; margin: 0.6rem 0 0; padding: 0; list-style: none; max-width: 32rem; }
-.fd-wanted-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.45rem 0; border-bottom: 1px solid var(--bk-ink-15); }
+.fd {
+  min-height: 100vh;
+  background: var(--bk-ground);
+}
+.fd-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  max-width: 76rem;
+  padding: 1.25rem var(--bk-gutter) 0;
+}
+.fd-who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--bk-ink-muted);
+}
+.fd-out {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--bk-ink);
+  cursor: pointer;
+}
+.fd-out:hover {
+  color: var(--bk-primary);
+}
+.fd-site {
+  display: block;
+  font-weight: 700;
+}
+.fd-address {
+  color: var(--bk-ink-muted);
+  font-size: 0.8125rem;
+}
+.fd-address:hover {
+  color: var(--bk-primary);
+}
+.fd-messages {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fd-message {
+  padding: 1rem 1.15rem;
+  border-radius: var(--bk-radius-sm);
+  background: var(--bk-surface);
+  box-shadow: 0 0 0 1px var(--bk-ink-15);
+}
+.fd-message-from {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--bk-ink-muted);
+}
+.fd-message-from strong {
+  color: var(--bk-ink);
+}
+.fd-message-text {
+  margin: 0;
+  max-width: 70ch;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.fd-tiles {
+  margin-bottom: 1.25rem;
+}
+.fd-tiles .bk-tile {
+  box-shadow: 0 1px 0 var(--bk-ink-15);
+}
+.fd-cols {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+}
+.fd-cols .bk-section {
+  margin: 0;
+}
+.fd-needs {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
+}
+.fd-signups {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fd-signups li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.15rem 1rem;
+}
+.fd-find {
+  max-width: 32rem;
+  margin-bottom: 1.25rem;
+}
+.fd-find .bk-input {
+  flex: 1;
+  min-width: 0;
+}
+.fd-form {
+  max-width: 32rem;
+}
+.fd-form .bk-note,
+.fd-form .bk-error {
+  margin-top: 0.6rem;
+}
+.fd-deals {
+  display: grid;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+.fd-emails {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr));
+}
+.fd-emails .bk-section {
+  margin: 0;
+}
+.fd-email {
+  display: block;
+  width: 100%;
+  height: 44rem;
+  margin-top: 0.75rem;
+  border: 0;
+  border-radius: var(--bk-radius-sm);
+  background: #0a0805;
+}
+.fd-wanted {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  max-width: 32rem;
+}
+.fd-wanted-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--bk-ink-15);
+}
+
+/* A count of new messages, reports or feedback on an admin tab (Alex, 2026-11-16). */
+.fd-new {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--bk-danger);
+  color: var(--bk-surface);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 0.1em;
+}

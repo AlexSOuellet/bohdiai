@@ -11,10 +11,22 @@ import { loadFounderSites, monthlyCents, type FounderSite } from './sites';
 
 type Db = SupabaseClient<Database>;
 
-export type SubscriptionDates = { tenant_id: string; status: string; created_at: string; canceled_at: string | null };
+export type SubscriptionDates = {
+  tenant_id: string;
+  status: string;
+  created_at: string;
+  canceled_at: string | null;
+};
 
 export type PlanLine = { plan: string | null; paying: number; monthlyCents: number };
-export type LatestSignup = { id: string; name: string; plan: string | null; maker: string | null; joined: string; free: boolean };
+export type LatestSignup = {
+  id: string;
+  name: string;
+  plan: string | null;
+  maker: string | null;
+  joined: string;
+  free: boolean;
+};
 
 export type Dashboard = {
   mrrCents: number;
@@ -32,7 +44,11 @@ const LATEST_SHOWN = 5;
 /** A site form still unbuilt after this long has stopped, not just started. */
 const STUCK_AFTER_MS = 60 * 60 * 1000;
 
-const MONTH = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit' });
+const MONTH = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/New_York',
+  year: 'numeric',
+  month: '2-digit',
+});
 
 /** "2026-11": the month a moment falls in, on Alex's clock. */
 export function monthKey(when: string | Date): string {
@@ -46,10 +62,16 @@ export function previousMonth(key: string): string {
 }
 
 /** When each maker joined, newest first: their subscription, or the day their free site was made. */
-function signupsOf(sites: readonly FounderSite[], subscriptions: readonly SubscriptionDates[]): { tenantId: string; joined: string }[] {
+function signupsOf(
+  sites: readonly FounderSite[],
+  subscriptions: readonly SubscriptionDates[],
+): { tenantId: string; joined: string }[] {
   const billed = new Set(subscriptions.map((s) => s.tenant_id));
   const invited = sites.filter((s) => s.planComp !== null && s.plan !== null && !billed.has(s.id));
-  return [...subscriptions.map((s) => ({ tenantId: s.tenant_id, joined: s.created_at })), ...invited.map((s) => ({ tenantId: s.id, joined: s.joined }))].sort((a, b) => b.joined.localeCompare(a.joined));
+  return [
+    ...subscriptions.map((s) => ({ tenantId: s.tenant_id, joined: s.created_at })),
+    ...invited.map((s) => ({ tenantId: s.id, joined: s.joined })),
+  ].sort((a, b) => b.joined.localeCompare(a.joined));
 }
 
 function planLines(sites: readonly FounderSite[]): PlanLine[] {
@@ -57,12 +79,22 @@ function planLines(sites: readonly FounderSite[]): PlanLine[] {
   for (const site of sites) {
     if (site.paying === null) continue;
     const line = lines.get(site.plan) ?? { plan: site.plan, paying: 0, monthlyCents: 0 };
-    lines.set(site.plan, { ...line, paying: line.paying + 1, monthlyCents: line.monthlyCents + monthlyCents(site.paying) });
+    lines.set(site.plan, {
+      ...line,
+      paying: line.paying + 1,
+      monthlyCents: line.monthlyCents + monthlyCents(site.paying),
+    });
   }
   return [...lines.values()].sort((a, b) => b.monthlyCents - a.monthlyCents);
 }
 
-export function buildDashboard(input: { sites: readonly FounderSite[]; subscriptions: readonly SubscriptionDates[]; stuck: number; messageDates: readonly string[]; now: Date }): Dashboard {
+export function buildDashboard(input: {
+  sites: readonly FounderSite[];
+  subscriptions: readonly SubscriptionDates[];
+  stuck: number;
+  messageDates: readonly string[];
+  now: Date;
+}): Dashboard {
   const { sites, subscriptions, stuck, messageDates, now } = input;
   const thisMonth = monthKey(now);
   const lastMonth = previousMonth(thisMonth);
@@ -77,7 +109,9 @@ export function buildDashboard(input: { sites: readonly FounderSite[]; subscript
       lastMonth: signups.filter((s) => monthKey(s.joined) === lastMonth).length,
     },
     cancels: {
-      thisMonth: subscriptions.filter((s) => s.canceled_at !== null && monthKey(s.canceled_at) === thisMonth).length,
+      thisMonth: subscriptions.filter(
+        (s) => s.canceled_at !== null && monthKey(s.canceled_at) === thisMonth,
+      ).length,
       leaving: sites.filter((s) => s.leaving).length,
     },
     sites: {
@@ -93,7 +127,18 @@ export function buildDashboard(input: { sites: readonly FounderSite[]; subscript
     plans: planLines(sites),
     latest: signups.slice(0, LATEST_SHOWN).flatMap((signup) => {
       const site = byId.get(signup.tenantId);
-      return site === undefined ? [] : [{ id: site.id, name: site.name, plan: site.plan, maker: site.maker, joined: signup.joined, free: site.planComp !== null }];
+      return site === undefined
+        ? []
+        : [
+            {
+              id: site.id,
+              name: site.name,
+              plan: site.plan,
+              maker: site.maker,
+              joined: signup.joined,
+              free: site.planComp !== null,
+            },
+          ];
     }),
   };
 }
@@ -106,7 +151,15 @@ export async function loadDashboard(db: Db, now: Date = new Date()): Promise<Das
     db.from('intakes').select('id').neq('status', 'built').lt('created_at', stuckBefore),
     loadFounderMessages(db),
   ]);
-  if (subscriptions.error !== null) throw new Error(`Could not read the subscriptions: ${subscriptions.error.message}`);
-  if (unbuilt.error !== null) throw new Error(`Could not read the site forms: ${unbuilt.error.message}`);
-  return buildDashboard({ sites, subscriptions: subscriptions.data, stuck: unbuilt.data.length, messageDates: messages.map((m) => m.sent), now });
+  if (subscriptions.error !== null)
+    throw new Error(`Could not read the subscriptions: ${subscriptions.error.message}`);
+  if (unbuilt.error !== null)
+    throw new Error(`Could not read the site forms: ${unbuilt.error.message}`);
+  return buildDashboard({
+    sites,
+    subscriptions: subscriptions.data,
+    stuck: unbuilt.data.length,
+    messageDates: messages.map((m) => m.sent),
+    now,
+  });
 }

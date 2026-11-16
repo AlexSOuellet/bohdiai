@@ -16,7 +16,15 @@ import type { CardWords } from './words';
 import { CardGallery } from './CardGallery';
 import { CardContactForm } from './CardContactForm';
 import { CardMarquee } from './CardMarquee';
-import { bioParagraphs, initials, marqueeDateLine, marqueeFill, marqueeWords, ringText, type CardData } from './data';
+import {
+  bioParagraphs,
+  initials,
+  marqueeDateLine,
+  marqueeFill,
+  marqueeWords,
+  ringText,
+  type CardData,
+} from './data';
 import { marqueeDatesCss, marqueeDatesSeconds } from './marquee';
 import type { CardPaint } from './paint';
 
@@ -51,7 +59,15 @@ function InstagramIcon(): ReactElement {
 }
 
 /** The maker's round stamp: initials inside a ring of words, pressed into the opening. */
-function Mark({ name, kicker, separator }: { name: string; kicker: string; separator: string }): ReactElement {
+function Mark({
+  name,
+  kicker,
+  separator,
+}: {
+  name: string;
+  kicker: string;
+  separator: string;
+}): ReactElement {
   return (
     <span className="bc-mark" aria-hidden="true">
       <svg viewBox="0 0 100 100">
@@ -69,7 +85,15 @@ function Mark({ name, kicker, separator }: { name: string; kicker: string; separ
 
 /** Footer around every page. `platformCredit`: the "Empowered by BohdiAI" line on
  *  a bohdiai.com address; off on a custom domain (wired with custom domains). */
-function Footer({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
+function Footer({
+  name,
+  platformCredit,
+  w,
+}: {
+  name: string;
+  platformCredit: boolean;
+  w: CardWords['footer'];
+}): ReactElement {
   const year = new Date().getFullYear();
   return (
     <footer className="bc-foot">
@@ -77,18 +101,21 @@ function Footer({ name, platformCredit, w }: { name: string; platformCredit: boo
         {name}
       </span>
       <div className="bc-foot__row">
-      <span>
-        © {year} {name}
-      </span>
-      <nav aria-label={w.label}>
-        <a href="/privacy">{w.privacy}</a>
-        <a href="/terms">{w.terms}</a>
-        {platformCredit && (
-          <a href={PLATFORM_URL}>
-            {w.creditPrefix} {w.creditBrand}
+        <span>
+          © {year} {name}
+        </span>
+        <nav aria-label={w.label}>
+          <a href="/privacy">{w.privacy}</a>
+          <a href="/terms">{w.terms}</a>
+          <a href="/report" rel="nofollow">
+            {w.report}
           </a>
-        )}
-      </nav>
+          {platformCredit && (
+            <a href={PLATFORM_URL}>
+              {w.creditPrefix} {w.creditBrand}
+            </a>
+          )}
+        </nav>
       </div>
     </footer>
   );
@@ -108,7 +135,15 @@ function Frame({ paint, children }: { paint: CardPaint; children: ReactNode }): 
   );
 }
 
-function TopBar({ name, links, label }: { name: string; links: { id: string; label: string }[]; label: string }): ReactElement {
+function TopBar({
+  name,
+  links,
+  label,
+}: {
+  name: string;
+  links: { id: string; label: string }[];
+  label: string;
+}): ReactElement {
   return (
     <div className="bc-bar">
       <Link className="bc-brand" href="/">
@@ -140,14 +175,21 @@ export function CardLanding({
 }): ReactElement {
   const { name, profile: p, photos, words: w } = data;
   const wall = photos.slice(0, 3);
-  const words = marqueeWords(p.kicker, photos.map((x) => x.caption));
+  const words = marqueeWords(
+    p.kicker,
+    photos.map((x) => x.caption),
+  );
   const dateLines = data.dates.map((d) => marqueeDateLine(d, w.dates));
   // The quiet row carries the owner's market dates; with none, the business name.
   const quietFill = marqueeFill(dateLines.length > 0 ? dateLines : [name]);
   const hasDates = dateLines.length > 0;
-  const quietClass = hasDates ? 'bc-marquee__row bc-marquee__row--quiet bc-marquee__row--dates' : 'bc-marquee__row bc-marquee__row--quiet';
+  const quietClass = hasDates
+    ? 'bc-marquee__row bc-marquee__row--quiet bc-marquee__row--dates'
+    : 'bc-marquee__row bc-marquee__row--quiet';
   // The dates row loops at the big words' speed, timed from both rows' contents.
-  const datesSeconds = hasDates ? marqueeDatesSeconds(words, quietFill.slice(0, quietFill.length / 2)) : null;
+  const datesSeconds = hasDates
+    ? marqueeDatesSeconds(words, quietFill.slice(0, quietFill.length / 2))
+    : null;
   const bio = bioParagraphs(p.bio);
   const hasAbout = p.aboutTitle !== '' || bio.length > 0;
   const hasWork = photos.length > 0;
@@ -195,7 +237,11 @@ export function CardLanding({
               <span key={photo.id} className="bc-print">
                 {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.url} alt={photo.caption} fetchPriority={i === 0 ? 'high' : 'auto'} />
+                <img
+                  src={photo.url}
+                  alt={photo.caption}
+                  fetchPriority={i === 0 ? 'high' : 'auto'}
+                />
               </span>
             ))}
             <Mark name={name} kicker={p.kicker} separator={w.dates.separator} />
@@ -205,7 +251,9 @@ export function CardLanding({
 
       {words.length > 0 && (
         <CardMarquee>
-          {datesSeconds !== null && <style dangerouslySetInnerHTML={{ __html: marqueeDatesCss(datesSeconds) }} />}
+          {datesSeconds !== null && (
+            <style dangerouslySetInnerHTML={{ __html: marqueeDatesCss(datesSeconds) }} />
+          )}
           <div className="bc-marquee__row">
             {[...words, ...words].map((w, i) => (
               <span key={`${i}-${w}`}>{w}</span>

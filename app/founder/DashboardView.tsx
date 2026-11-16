@@ -7,11 +7,16 @@ import { shortDate } from './format';
 const count = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 
 function NeedsYou({ needs }: { needs: Dashboard['needs'] }): React.ReactElement {
-  if (needs.failing + needs.stuck + needs.messages === 0) return <p className="bk-note">Nothing needs you right now.</p>;
+  if (needs.failing + needs.stuck + needs.messages === 0)
+    return <p className="bk-note">Nothing needs you right now.</p>;
   return (
     <ul className="fd-needs">
-      {needs.failing > 0 && <li>{count(needs.failing, 'payment is failing', 'payments are failing')}</li>}
-      {needs.stuck > 0 && <li>{count(needs.stuck, 'site build has stopped', 'site builds have stopped')}</li>}
+      {needs.failing > 0 && (
+        <li>{count(needs.failing, 'payment is failing', 'payments are failing')}</li>
+      )}
+      {needs.stuck > 0 && (
+        <li>{count(needs.stuck, 'site build has stopped', 'site builds have stopped')}</li>
+      )}
       {needs.messages > 0 && (
         <li>
           <Link href="/founder/messages" className="bk-link">
@@ -28,10 +33,26 @@ export function DashboardView({ data }: { data: Dashboard }): React.ReactElement
   return (
     <>
       <div className="bk-tiles fd-tiles">
-        <StatTile label="MRR" value={dollars(data.mrrCents)} note={count(data.paying, 'paying maker', 'paying makers')} />
-        <StatTile label="New sign-ups this month" value={String(data.signups.thisMonth)} note={`${data.signups.lastMonth} last month`} />
-        <StatTile label="Cancellations this month" value={String(data.cancels.thisMonth)} note={`${data.cancels.leaving} leaving at the end of their term`} />
-        <StatTile label="Live sites" value={String(data.sites.live)} note={`${count(data.sites.drafts, 'draft', 'drafts')}, ${count(data.sites.free, 'free site', 'free sites')}`} />
+        <StatTile
+          label="MRR"
+          value={dollars(data.mrrCents)}
+          note={count(data.paying, 'paying maker', 'paying makers')}
+        />
+        <StatTile
+          label="New sign-ups this month"
+          value={String(data.signups.thisMonth)}
+          note={`${data.signups.lastMonth} last month`}
+        />
+        <StatTile
+          label="Cancellations this month"
+          value={String(data.cancels.thisMonth)}
+          note={`${data.cancels.leaving} leaving at the end of their term`}
+        />
+        <StatTile
+          label="Live sites"
+          value={String(data.sites.live)}
+          note={`${count(data.sites.drafts, 'draft', 'drafts')}, ${count(data.sites.free, 'free site', 'free sites')}`}
+        />
       </div>
 
       <section className="bk-section">

@@ -40,7 +40,15 @@ function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-function FooterLinks({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
+function FooterLinks({
+  name,
+  platformCredit,
+  w,
+}: {
+  name: string;
+  platformCredit: boolean;
+  w: CardWords['footer'];
+}): ReactElement {
   return (
     <>
       <span>
@@ -48,6 +56,9 @@ function FooterLinks({ name, platformCredit, w }: { name: string; platformCredit
       </span>
       <a href="/privacy">{w.privacy}</a>
       <a href="/terms">{w.terms}</a>
+      <a href="/report" rel="nofollow">
+        {w.report}
+      </a>
       {platformCredit && (
         <a href={PLATFORM_URL}>
           {w.creditPrefix} {w.creditBrand}
@@ -68,7 +79,11 @@ function Slam({ name }: { name: string }): ReactElement {
   return (
     <h1 className={`sr-slam${size}`} aria-label={name}>
       {lines.map((word, w) => (
-        <span key={`${w}-${word}`} className={w === 0 ? 'sr-word' : 'sr-word sr-word--soft'} aria-hidden="true">
+        <span
+          key={`${w}-${word}`}
+          className={w === 0 ? 'sr-word' : 'sr-word sr-word--soft'}
+          aria-hidden="true"
+        >
           {[...word].map((ch, i) => {
             if (ch === ' ') return ' ';
             const cls = `sr-l${Math.min(n++, SLAM_LETTERS - 1)}`;
@@ -100,9 +115,11 @@ function Caption({ text }: { text: string }): ReactElement {
 
 /** The piece's price as the shop shows it: the sale price beside the struck full one, or "Ask for price". */
 function Price({ product, w }: { product: ProductView; w: CardWords['shoreline'] }): ReactElement {
-  if (product.askForPrice === true) return <span className="sr-price sr-price--ask">{w.askForPrice}</span>;
+  if (product.askForPrice === true)
+    return <span className="sr-price sr-price--ask">{w.askForPrice}</span>;
   // Sold shows the moment it sells; made to order with none ready still sells (Alex, 2026-10-22).
-  if (product.status === 'sold_out') return <span className="sr-price">{product.oneOfAKind === true ? w.sold : w.soldOut}</span>;
+  if (product.status === 'sold_out')
+    return <span className="sr-price">{product.oneOfAKind === true ? w.sold : w.soldOut}</span>;
   if (product.orderOnly === true) {
     return (
       <span className="sr-price">
@@ -161,7 +178,13 @@ function PhotoTile({ url, caption }: { url: string; caption: string }): ReactEle
   );
 }
 
-function ProductTile({ product, w }: { product: ProductView; w: CardWords['shoreline'] }): ReactElement {
+function ProductTile({
+  product,
+  w,
+}: {
+  product: ProductView;
+  w: CardWords['shoreline'];
+}): ReactElement {
   const photo = firstPhoto(product);
   return (
     <li className="sr-tile">
@@ -182,7 +205,17 @@ function ProductTile({ product, w }: { product: ProductView; w: CardWords['shore
 }
 
 /** The top bar: her name home, and the shop when the site has one. */
-function Bar({ name, shop, w, motion }: { name: string; shop: boolean; w: CardWords['shoreline']; motion: boolean }): ReactElement {
+function Bar({
+  name,
+  shop,
+  w,
+  motion,
+}: {
+  name: string;
+  shop: boolean;
+  w: CardWords['shoreline'];
+  motion: boolean;
+}): ReactElement {
   return (
     <header className="sr-bar">
       <Link href="/">{name}</Link>
@@ -239,7 +272,9 @@ export function ShowreelLanding({
   const shop = products !== undefined;
   const [opener, ...rest] = photos;
   const tiles = shop
-    ? products.map((product) => <ProductTile key={product.slug} product={product} w={w.shoreline} />)
+    ? products.map((product) => (
+        <ProductTile key={product.slug} product={product} w={w.shoreline} />
+      ))
     : rest.map((photo) => <PhotoTile key={photo.id} url={photo.url} caption={photo.caption} />);
   const bio = bioParagraphs(p.bio);
   const [sayA, sayB] = halves(p.aboutTitle);
@@ -384,7 +419,9 @@ export function ShowreelProduct({
   const w = data.words;
   const W = w.shoreline;
   const photos = (allPhotos ? product.media : product.media.slice(0, 1)).flatMap((m) =>
-    m.kind === 'image' && m.url !== undefined ? [{ url: m.url, alt: m.alt === '' ? product.name : m.alt }] : [],
+    m.kind === 'image' && m.url !== undefined
+      ? [{ url: m.url, alt: m.alt === '' ? product.name : m.alt }]
+      : [],
   );
   return (
     <Frame>
@@ -397,7 +434,12 @@ export function ShowreelProduct({
           <div className="sr-piece-photos">
             {photos.map((ph, i) => (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img key={`${i}-${ph.url}`} src={ph.url} alt={ph.alt} loading={i === 0 ? 'eager' : 'lazy'} />
+              <img
+                key={`${i}-${ph.url}`}
+                src={ph.url}
+                alt={ph.alt}
+                loading={i === 0 ? 'eager' : 'lazy'}
+              />
             ))}
           </div>
           <div className="sr-piece-sheet">
@@ -407,7 +449,9 @@ export function ShowreelProduct({
             <p className="sr-piece-price">
               <Price product={product} w={W} />
             </p>
-            {product.shortDescription !== undefined && product.shortDescription !== '' && <p className="sr-piece-short">{product.shortDescription}</p>}
+            {product.shortDescription !== undefined && product.shortDescription !== '' && (
+              <p className="sr-piece-short">{product.shortDescription}</p>
+            )}
             {bioParagraphs(product.description).map((para) => (
               <p key={para.slice(0, 40)}>{para}</p>
             ))}
@@ -417,7 +461,11 @@ export function ShowreelProduct({
           </div>
         </article>
         <section className="sr-ask" id={ASK_ID} aria-label={W.askAbout}>
-          <CardContactForm tenantId={tenantId} w={w.form} initialMessage={fill(W.askMessage, { name: product.name })} />
+          <CardContactForm
+            tenantId={tenantId}
+            w={w.form}
+            initialMessage={fill(W.askMessage, { name: product.name })}
+          />
         </section>
         <footer className="sr-page-foot">
           <FooterLinks name={data.name} platformCredit={platformCredit} w={w.footer} />

@@ -1,7 +1,21 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { logger } from '@/lib/logger';
 
-export type FormName = 'estimate' | 'order' | 'market' | 'market-step' | 'contact' | 'inquiry' | 'notify-interest' | 'signin' | 'reset' | 'intake' | 'signup' | 'feedback' | 'describe-try';
+export type FormName =
+  | 'estimate'
+  | 'order'
+  | 'market'
+  | 'market-step'
+  | 'contact'
+  | 'inquiry'
+  | 'notify-interest'
+  | 'signin'
+  | 'reset'
+  | 'intake'
+  | 'signup'
+  | 'feedback'
+  | 'describe-try'
+  | 'report';
 
 export type FormAllowance = 'allowed' | 'limited' | 'unavailable';
 
@@ -25,14 +39,22 @@ export function clientIp(req: Request): string | null {
  *
  * `limiter` is for tests; in the app the binding comes from the Worker's env.
  */
-export async function allowFormSubmit(req: Request, form: FormName, limiter?: RateLimit): Promise<FormAllowance> {
+export async function allowFormSubmit(
+  req: Request,
+  form: FormName,
+  limiter?: RateLimit,
+): Promise<FormAllowance> {
   try {
     const binding = limiter ?? (await getCloudflareContext({ async: true })).env.FORM_LIMITER;
-    if (binding === undefined) throw new Error('FORM_LIMITER binding missing — see "ratelimits" in wrangler.jsonc');
+    if (binding === undefined)
+      throw new Error('FORM_LIMITER binding missing — see "ratelimits" in wrangler.jsonc');
     const { success } = await binding.limit({ key: `${form}:${clientIp(req) ?? 'unknown'}` });
     return success ? 'allowed' : 'limited';
   } catch (err) {
-    logger.error('form rate limiter unavailable', { form, error: err instanceof Error ? err.message : String(err) });
+    logger.error('form rate limiter unavailable', {
+      form,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return 'unavailable';
   }
 }
@@ -52,6 +74,7 @@ export async function formLimitResponse(
 ): Promise<Response | null> {
   const allowance = await allowFormSubmit(req, form);
   if (allowance === 'allowed') return null;
-  const [message, status] = allowance === 'limited' ? [LIMITED_MESSAGE, 429] : [UNAVAILABLE_MESSAGE, 503];
+  const [message, status] =
+    allowance === 'limited' ? [LIMITED_MESSAGE, 429] : [UNAVAILABLE_MESSAGE, 503];
   return Response.json(toBody(message), { status });
 }

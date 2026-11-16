@@ -9,21 +9,44 @@ export const INVITE_OPEN = 'invite_open';
 
 const PURPOSE = 'bohdiai-invite:';
 
-const key = (secret: string, use: 'sign' | 'verify'): Promise<CryptoKey> => crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [use]);
+const key = (secret: string, use: 'sign' | 'verify'): Promise<CryptoKey> =>
+  crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    [use],
+  );
 
-const toHex = (bytes: ArrayBuffer): string => Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, '0')).join('');
+const toHex = (bytes: ArrayBuffer): string =>
+  Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, '0')).join('');
 
 export async function inviteToken(secret: string, userId: string): Promise<string> {
-  const signature = await crypto.subtle.sign('HMAC', await key(secret, 'sign'), new TextEncoder().encode(PURPOSE + userId));
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    await key(secret, 'sign'),
+    new TextEncoder().encode(PURPOSE + userId),
+  );
   return `${userId}.${toHex(signature)}`;
 }
 
 /** The account a token names, or null when it isn't one we signed. */
 export async function readInviteToken(secret: string, token: string): Promise<string | null> {
   const [userId, signature, extra] = token.split('.');
-  if (userId === undefined || signature === undefined || extra !== undefined || !/^[0-9a-f]{64}$/.test(signature)) return null;
+  if (
+    userId === undefined ||
+    signature === undefined ||
+    extra !== undefined ||
+    !/^[0-9a-f]{64}$/.test(signature)
+  )
+    return null;
   const bytes = Uint8Array.from(signature.match(/../g) ?? [], (pair) => parseInt(pair, 16));
-  const good = await crypto.subtle.verify('HMAC', await key(secret, 'verify'), bytes, new TextEncoder().encode(PURPOSE + userId));
+  const good = await crypto.subtle.verify(
+    'HMAC',
+    await key(secret, 'verify'),
+    bytes,
+    new TextEncoder().encode(PURPOSE + userId),
+  );
   return good ? userId : null;
 }
 

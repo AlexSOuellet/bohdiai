@@ -96,6 +96,8 @@ export const CONTRACTOR_WORD_SPOTS = {
   },
   footer: {
     privacy: '',
+    /** "Report this site" (/report, go-live step 3). */
+    report: '',
     rights: '',
     creditPrefix: '',
     creditBrand: '',

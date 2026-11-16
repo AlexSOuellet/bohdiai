@@ -10,7 +10,10 @@ export const dynamic = 'force-dynamic';
 /** Emails: every email a maker can get, shown as they'll see it. */
 export default async function FounderEmailsPage(): Promise<React.ReactElement> {
   await requireFounder();
-  const samples = emailSamples(await getIntakeWords(supabaseAdmin()), headersOrigin(await headers()));
+  const samples = emailSamples(
+    await getIntakeWords(supabaseAdmin()),
+    headersOrigin(await headers()),
+  );
   return (
     <>
       <div className="bk-head">

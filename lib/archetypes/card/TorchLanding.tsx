@@ -28,7 +28,15 @@ const NAME_KINDS: BurnKind[] = ['name1', 'name2', 'name3'];
 /** Burned words: a hidden copy holds the space, the char layer is the burn, the
  *  ember layer is the glowing edge (shown only while burning). With `soft`,
  *  everything after the first word turns to the italic (“Goldie, on basswood”). */
-function Burn({ lines, kind, soft = false }: { lines: string[]; kind: BurnKind; soft?: boolean }): ReactElement {
+function Burn({
+  lines,
+  kind,
+  soft = false,
+}: {
+  lines: string[];
+  kind: BurnKind;
+  soft?: boolean;
+}): ReactElement {
   const [d, delay] = BURN_TIMING[kind];
   const text = lines.map((l, i) => {
     const [first = '', ...rest] = l.split(' ');
@@ -81,7 +89,15 @@ function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-function Footer({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
+function Footer({
+  name,
+  platformCredit,
+  w,
+}: {
+  name: string;
+  platformCredit: boolean;
+  w: CardWords['footer'];
+}): ReactElement {
   return (
     <footer className="tt-foot">
       <span className="tt-foot__big" aria-hidden="true">
@@ -93,6 +109,9 @@ function Footer({ name, platformCredit, w }: { name: string; platformCredit: boo
         </span>
         <a href="/privacy">{w.privacy}</a>
         <a href="/terms">{w.terms}</a>
+        <a href="/report" rel="nofollow">
+          {w.report}
+        </a>
         {platformCredit && (
           <a href={PLATFORM_URL}>
             {w.creditPrefix} {w.creditBrand}
@@ -104,7 +123,15 @@ function Footer({ name, platformCredit, w }: { name: string; platformCredit: boo
 }
 
 /** The maker's round brand: initials inside a ring of words, pressed into the board. */
-function Brand({ name, kicker, separator }: { name: string; kicker: string; separator: string }): ReactElement {
+function Brand({
+  name,
+  kicker,
+  separator,
+}: {
+  name: string;
+  kicker: string;
+  separator: string;
+}): ReactElement {
   return (
     <div className="tt-brand" data-lit="" aria-hidden="true">
       <svg viewBox="0 0 300 300">
@@ -151,7 +178,13 @@ export function TorchLanding({
   ];
   // Stripes alternate char and red between the sections that are there.
   let stripe = 0;
-  const scorch = (): ReactElement => <div className={stripe++ % 2 === 0 ? 'tt-stripe' : 'tt-stripe tt-stripe--red'} data-lit="" aria-hidden="true" />;
+  const scorch = (): ReactElement => (
+    <div
+      className={stripe++ % 2 === 0 ? 'tt-stripe' : 'tt-stripe tt-stripe--red'}
+      data-lit=""
+      aria-hidden="true"
+    />
+  );
 
   return (
     <Frame>
@@ -184,7 +217,11 @@ export function TorchLanding({
             )}
             <h1 className={longName ? 'tt-name tt-name--long' : 'tt-name'} aria-label={name}>
               {lines.map((line, i) => (
-                <span key={`${i}-${line}`} className={i === 0 ? 'tt-row' : 'tt-row tt-row--soft'} aria-hidden="true">
+                <span
+                  key={`${i}-${line}`}
+                  className={i === 0 ? 'tt-row' : 'tt-row tt-row--soft'}
+                  aria-hidden="true"
+                >
                   <Burn lines={[line]} kind={NAME_KINDS[i] ?? 'name3'} />
                 </span>
               ))}
@@ -247,10 +284,18 @@ export function TorchLanding({
                     {photos.map((photo, i) => (
                       <li key={photo.id} className="tt-piece" data-lit="">
                         <figure>
-                          <Snapshot index={i} className="tt-shot" label={photoLabel(photo.caption, i + 1, w.work)}>
+                          <Snapshot
+                            index={i}
+                            className="tt-shot"
+                            label={photoLabel(photo.caption, i + 1, w.work)}
+                          >
                             {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={photo.url} alt={photo.caption} loading={i < 2 ? 'eager' : 'lazy'} />
+                            <img
+                              src={photo.url}
+                              alt={photo.caption}
+                              loading={i < 2 ? 'eager' : 'lazy'}
+                            />
                           </Snapshot>
                         </figure>
                         {photo.caption !== '' && (

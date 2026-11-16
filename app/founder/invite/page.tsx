@@ -11,7 +11,10 @@ export const dynamic = 'force-dynamic';
 /** Invite a maker: a free site with no payment step, or a discount already on their link. */
 export default async function FounderInvitePage(): Promise<React.ReactElement> {
   await requireFounder();
-  const waiting = await loadWaitingInvites(process.env['STRIPE_SECRET_KEY'] === undefined ? null : stripe(), supabaseAdmin());
+  const waiting = await loadWaitingInvites(
+    process.env['STRIPE_SECRET_KEY'] === undefined ? null : stripe(),
+    supabaseAdmin(),
+  );
   return (
     <>
       <div className="bk-head">
@@ -25,19 +28,37 @@ export default async function FounderInvitePage(): Promise<React.ReactElement> {
               <label htmlFor="fd-name" className="bk-label">
                 Their name
               </label>
-              <input id="fd-name" name="name" autoComplete="off" maxLength={120} className="bk-input" />
+              <input
+                id="fd-name"
+                name="name"
+                autoComplete="off"
+                maxLength={120}
+                className="bk-input"
+              />
             </div>
             <div className="bk-field">
               <label htmlFor="fd-email" className="bk-label">
                 Their email
               </label>
-              <input id="fd-email" name="email" type="email" autoComplete="off" className="bk-input" />
+              <input
+                id="fd-email"
+                name="email"
+                type="email"
+                autoComplete="off"
+                className="bk-input"
+              />
             </div>
             <div className="bk-field">
               <label htmlFor="fd-business" className="bk-label">
                 Business name
               </label>
-              <input id="fd-business" name="business" autoComplete="off" maxLength={120} className="bk-input" />
+              <input
+                id="fd-business"
+                name="business"
+                autoComplete="off"
+                maxLength={120}
+                className="bk-input"
+              />
             </div>
             <div className="bk-field">
               <label htmlFor="fd-plan" className="bk-label">
@@ -63,7 +84,9 @@ export default async function FounderInvitePage(): Promise<React.ReactElement> {
         <section className="bk-section">
           <h2 className="bk-section-title">Waiting to start</h2>
           {waiting.length === 0 ? (
-            <p className="bk-note">Nobody’s waiting. Anyone you invite shows here until they start.</p>
+            <p className="bk-note">
+              Nobody’s waiting. Anyone you invite shows here until they start.
+            </p>
           ) : (
             <ul className="fd-signups">
               {waiting.map((w) => (
@@ -75,7 +98,9 @@ export default async function FounderInvitePage(): Promise<React.ReactElement> {
                     </span>
                   </span>
                   <ActionForm action={sendInviteAgain} button="Send again" quiet>
-                    {w.tenantId !== null && <input type="hidden" name="tenantId" value={w.tenantId} />}
+                    {w.tenantId !== null && (
+                      <input type="hidden" name="tenantId" value={w.tenantId} />
+                    )}
                     {w.code !== null && <input type="hidden" name="code" value={w.code} />}
                   </ActionForm>
                 </li>

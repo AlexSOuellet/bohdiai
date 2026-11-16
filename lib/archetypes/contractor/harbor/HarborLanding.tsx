@@ -22,7 +22,11 @@ import { QuoteRotator } from '../QuoteRotator';
 const ESTIMATE_ID = 'estimate';
 
 function Icon({ name, fill }: { name: string; fill?: boolean }): ReactElement {
-  return <span className={fill === true ? 'hb-icon hb-icon--fill' : 'hb-icon'} aria-hidden="true">{name}</span>;
+  return (
+    <span className={fill === true ? 'hb-icon hb-icon--fill' : 'hb-icon'} aria-hidden="true">
+      {name}
+    </span>
+  );
 }
 
 /** Header, footer and the phone thumb bar around any page body. */
@@ -49,8 +53,14 @@ export function HarborShell({
       <link rel="stylesheet" href={HARBOR_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: harborCss(palette) }} />
       <div className="hb">
-        <a className="hb-skip" href={`/#${ESTIMATE_ID}`}>{w.skipToEstimate}</a>
-        {c.notice !== undefined && <p className="hb-notice"><Icon name="campaign" /> {c.notice}</p>}
+        <a className="hb-skip" href={`/#${ESTIMATE_ID}`}>
+          {w.skipToEstimate}
+        </a>
+        {c.notice !== undefined && (
+          <p className="hb-notice">
+            <Icon name="campaign" /> {c.notice}
+          </p>
+        )}
 
         <header className="hb-head">
           <div className="hb-wrap hb-head__row">
@@ -59,8 +69,12 @@ export function HarborShell({
               <span className="hb-mark__trade">{b.trade}</span>
             </Link>
             <nav className="hb-head__actions" aria-label={w.menuLabel}>
-              <a className="hb-head__phone" href={tel}><Icon name="call" /> <span>{b.phone}</span></a>
-              <a className="hb-btn hb-btn--gold" href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
+              <a className="hb-head__phone" href={tel}>
+                <Icon name="call" /> <span>{b.phone}</span>
+              </a>
+              <a className="hb-btn hb-btn--gold" href={`/#${ESTIMATE_ID}`}>
+                {w.estimateShort}
+              </a>
             </nav>
           </div>
         </header>
@@ -69,11 +83,22 @@ export function HarborShell({
 
         <footer className="hb-foot">
           <div className="hb-wrap hb-foot__row">
-            <span className="hb-foot__name">{b.name} {b.trade}</span>
-            <span>{w.serving} {b.serviceArea.join(w.separator)}</span>
+            <span className="hb-foot__name">
+              {b.name} {b.trade}
+            </span>
+            <span>
+              {w.serving} {b.serviceArea.join(w.separator)}
+            </span>
             <a href={tel}>{b.phone}</a>
             <a href="/privacy">{w.footer.privacy}</a>
-            <span>{w.footer.copyright} {year}{w.separator}{w.footer.rights}</span>
+            <a href="/report" rel="nofollow">
+              {w.footer.report}
+            </a>
+            <span>
+              {w.footer.copyright} {year}
+              {w.separator}
+              {w.footer.rights}
+            </span>
             {platformCredit && (
               <a href={PLATFORM_URL}>
                 {year} {w.footer.creditPrefix} {w.footer.creditBrand}
@@ -83,8 +108,12 @@ export function HarborShell({
         </footer>
 
         <div className="hb-thumb">
-          <a href={tel}><Icon name="call" /> {w.call}</a>
-          <a href={`/#${ESTIMATE_ID}`}><Icon name="architecture" /> {w.estimateShort}</a>
+          <a href={tel}>
+            <Icon name="call" /> {w.call}
+          </a>
+          <a href={`/#${ESTIMATE_ID}`}>
+            <Icon name="architecture" /> {w.estimateShort}
+          </a>
         </div>
       </div>
     </>
@@ -92,7 +121,17 @@ export function HarborShell({
 }
 
 /** A plain content page (privacy, terms) in the harbor chrome. */
-export function HarborContentPage({ content, palette, words, html }: { content: ContractorContent; palette: DerivedPalette; words: ContractorWords; html: string }): ReactElement {
+export function HarborContentPage({
+  content,
+  palette,
+  words,
+  html,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  words: ContractorWords;
+  html: string;
+}): ReactElement {
   return (
     <HarborShell content={content} palette={palette} words={words}>
       <main className="hb-section">
@@ -102,11 +141,23 @@ export function HarborContentPage({ content, palette, words, html }: { content: 
   );
 }
 
-function SectionHead({ eyebrow, title, intro, id }: { eyebrow: string; title: string; intro?: string | undefined; id: string }): ReactElement {
+function SectionHead({
+  eyebrow,
+  title,
+  intro,
+  id,
+}: {
+  eyebrow: string;
+  title: string;
+  intro?: string | undefined;
+  id: string;
+}): ReactElement {
   return (
     <div className="hb-shead">
       <p className="hb-eyebrow">{eyebrow}</p>
-      <h2 className="hb-h2" id={id}>{title}</h2>
+      <h2 className="hb-h2" id={id}>
+        {title}
+      </h2>
       {intro !== undefined && <p className="hb-lede">{intro}</p>}
     </div>
   );
@@ -133,17 +184,31 @@ export function HarborLanding({
       <main>
         {/* ── the cover: photo, words on it, the owner large in front ── */}
         <section className="hb-cover">
-          <div className="hb-cover__photo"><Media media={c.hero.media} eager /></div>
+          <div className="hb-cover__photo">
+            <Media media={c.hero.media} eager />
+          </div>
           {owner !== undefined && (
-            <img className="hb-cover__owner" src={owner.url} alt={owner.alt} loading="eager" decoding="async" />
+            <img
+              className="hb-cover__owner"
+              src={owner.url}
+              alt={owner.alt}
+              loading="eager"
+              decoding="async"
+            />
           )}
           <div className="hb-wrap hb-cover__words">
-            <p className="hb-pill"><Icon name="home_work" /> {c.hero.kicker}</p>
+            <p className="hb-pill">
+              <Icon name="home_work" /> {c.hero.kicker}
+            </p>
             <h1 className="hb-h1">{c.hero.headline}</h1>
             <p className="hb-cover__sub">{c.hero.sub}</p>
             <div className="hb-cover__ctas">
-              <a className="hb-btn hb-btn--gold hb-btn--big" href={`#${ESTIMATE_ID}`}>{c.hero.estimateLabel} <Icon name="arrow_downward" /></a>
-              <a className="hb-btn hb-btn--ghost hb-btn--big" href={tel}><Icon name="call" /> {b.phone}</a>
+              <a className="hb-btn hb-btn--gold hb-btn--big" href={`#${ESTIMATE_ID}`}>
+                {c.hero.estimateLabel} <Icon name="arrow_downward" />
+              </a>
+              <a className="hb-btn hb-btn--ghost hb-btn--big" href={tel}>
+                <Icon name="call" /> {b.phone}
+              </a>
             </div>
           </div>
         </section>
@@ -163,14 +228,26 @@ export function HarborLanding({
         )}
 
         {/* ── the request, right away ───────────────────────────── */}
-        <section className="hb-section hb-request" id={ESTIMATE_ID} aria-labelledby="hb-estimate-title">
+        <section
+          className="hb-section hb-request"
+          id={ESTIMATE_ID}
+          aria-labelledby="hb-estimate-title"
+        >
           <div className="hb-wrap hb-request__grid">
             <div>
               <p className="hb-eyebrow hb-eyebrow--dot">{c.estimate.eyebrow}</p>
-              <h2 className="hb-h2" id="hb-estimate-title">{c.estimate.title}</h2>
+              <h2 className="hb-h2" id="hb-estimate-title">
+                {c.estimate.title}
+              </h2>
               <p className="hb-lede">{c.estimate.intro}</p>
               {c.estimate.steps !== undefined && (
-                <ul className="hb-steps">{c.estimate.steps.map((s) => <li key={s}><Icon name="check_circle" /> {s}</li>)}</ul>
+                <ul className="hb-steps">
+                  {c.estimate.steps.map((s) => (
+                    <li key={s}>
+                      <Icon name="check_circle" /> {s}
+                    </li>
+                  ))}
+                </ul>
               )}
               <a className="hb-direct" href={tel}>
                 <span className="hb-direct__label">{w.callOrText}</span>
@@ -179,7 +256,13 @@ export function HarborLanding({
             </div>
             {tenantId !== undefined && (
               <div className="hb-formcard">
-                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} words={w.form} />
+                <EstimateForm
+                  tenantId={tenantId}
+                  services={c.services.items.map((s) => s.name)}
+                  states={c.estimate.states ?? b.serviceArea}
+                  detailsHint={c.estimate.detailsHint}
+                  words={w.form}
+                />
               </div>
             )}
           </div>
@@ -188,18 +271,36 @@ export function HarborLanding({
         {/* ── services as photo cards ───────────────────────────── */}
         <section className="hb-section hb-tint" aria-labelledby="hb-services-title">
           <div className="hb-wrap">
-            <SectionHead eyebrow={c.services.eyebrow} title={c.services.title} intro={c.services.note} id="hb-services-title" />
+            <SectionHead
+              eyebrow={c.services.eyebrow}
+              title={c.services.title}
+              intro={c.services.note}
+              id="hb-services-title"
+            />
             <ul className="hb-services">
               {c.services.items.map((s) => (
-                <li key={s.name} className={s.photo !== undefined ? 'hb-card' : 'hb-card hb-card--plain'}>
-                  {s.photo !== undefined && <div className="hb-card__photo"><Media media={s.photo} /></div>}
+                <li
+                  key={s.name}
+                  className={s.photo !== undefined ? 'hb-card' : 'hb-card hb-card--plain'}
+                >
+                  {s.photo !== undefined && (
+                    <div className="hb-card__photo">
+                      <Media media={s.photo} />
+                    </div>
+                  )}
                   <div className="hb-card__body">
                     <div className="hb-card__top">
                       <h3 className="hb-h3">{s.name}</h3>
                       {s.icon !== undefined && <Icon name={s.icon} />}
                     </div>
                     <p className="hb-card__text">{s.detail}</p>
-                    {s.tags !== undefined && <ul className="hb-tags">{s.tags.map((t) => <li key={t}>{t}</li>)}</ul>}
+                    {s.tags !== undefined && (
+                      <ul className="hb-tags">
+                        {s.tags.map((t) => (
+                          <li key={t}>{t}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </li>
               ))}
@@ -210,13 +311,20 @@ export function HarborLanding({
         {/* ── the work as project cards ─────────────────────────── */}
         <section className="hb-section hb-warm" aria-labelledby="hb-work-title">
           <div className="hb-wrap">
-            <SectionHead eyebrow={c.work.eyebrow} title={c.work.title} intro={c.work.intro} id="hb-work-title" />
+            <SectionHead
+              eyebrow={c.work.eyebrow}
+              title={c.work.title}
+              intro={c.work.intro}
+              id="hb-work-title"
+            />
             <ul className="hb-projects">
               {c.work.items.map((item) => (
                 <li key={item.media.url} className="hb-card">
                   <div className="hb-card__photo hb-card__photo--tall">
                     <Media media={item.media} />
-                    {(item.place ?? item.tag) !== undefined && <span className="hb-card__flag">{item.place ?? item.tag}</span>}
+                    {(item.place ?? item.tag) !== undefined && (
+                      <span className="hb-card__flag">{item.place ?? item.tag}</span>
+                    )}
                   </div>
                   <div className="hb-card__body">
                     <h3 className="hb-h3 hb-h3--sans">{item.caption}</h3>
@@ -233,10 +341,16 @@ export function HarborLanding({
           <section className="hb-section hb-tint" aria-labelledby="hb-reviews-title">
             <div className="hb-wrap">
               <div className="hb-reviews__head">
-                <SectionHead eyebrow={reviews.eyebrow} title={reviews.title} id="hb-reviews-title" />
+                <SectionHead
+                  eyebrow={reviews.eyebrow}
+                  title={reviews.title}
+                  id="hb-reviews-title"
+                />
                 {reviews.rating !== undefined && (
                   <p className="hb-rating">
-                    <span className="hb-rating__score"><Icon name="star" fill /> {reviews.rating.score}</span>
+                    <span className="hb-rating__score">
+                      <Icon name="star" fill /> {reviews.rating.score}
+                    </span>
                     <span className="hb-rating__label">{reviews.rating.label}</span>
                   </p>
                 )}
@@ -250,9 +364,18 @@ export function HarborLanding({
         {/* ── where ─────────────────────────────────────────────── */}
         <section className="hb-section" aria-labelledby="hb-area-title">
           <div className="hb-wrap hb-area">
-            <SectionHead eyebrow={c.area.eyebrow} title={c.area.title} intro={c.area.intro} id="hb-area-title" />
+            <SectionHead
+              eyebrow={c.area.eyebrow}
+              title={c.area.title}
+              intro={c.area.intro}
+              id="hb-area-title"
+            />
             <ul className="hb-area__towns">
-              {b.serviceArea.map((t) => <li key={t}><Icon name="location_on" /> {t}</li>)}
+              {b.serviceArea.map((t) => (
+                <li key={t}>
+                  <Icon name="location_on" /> {t}
+                </li>
+              ))}
             </ul>
           </div>
         </section>
@@ -262,24 +385,45 @@ export function HarborLanding({
           <div className="hb-wrap hb-promise__grid">
             <div className="hb-promise__words">
               <p className="hb-eyebrow hb-eyebrow--light">{c.crew.eyebrow}</p>
-              <h2 className="hb-h2 hb-h2--light" id="hb-promise-title">{c.crew.quote}</h2>
+              <h2 className="hb-h2 hb-h2--light" id="hb-promise-title">
+                {c.crew.quote}
+              </h2>
               <p className="hb-promise__who">{c.crew.attribution}</p>
               {c.crew.promises !== undefined ? (
                 <ul className="hb-promises">
                   {c.crew.promises.map((p) => (
                     <li key={p.title}>
                       <Icon name={p.icon} />
-                      <span><strong>{p.title}</strong>{p.text}</span>
+                      <span>
+                        <strong>{p.title}</strong>
+                        {p.text}
+                      </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                c.crew.body.map((p) => <p className="hb-promise__body" key={p.slice(0, 32)}>{p}</p>)
+                c.crew.body.map((p) => (
+                  <p className="hb-promise__body" key={p.slice(0, 32)}>
+                    {p}
+                  </p>
+                ))
               )}
-              <a className="hb-btn hb-btn--gold hb-btn--big" href={tel}><Icon name="phone_in_talk" /> {fill(w.callNow, { phone: b.phone })}</a>
+              <a className="hb-btn hb-btn--gold hb-btn--big" href={tel}>
+                <Icon name="phone_in_talk" /> {fill(w.callNow, { phone: b.phone })}
+              </a>
             </div>
-            <div className={owner !== undefined ? 'hb-promise__figure hb-promise__figure--owner' : 'hb-promise__figure'}>
-              {owner !== undefined ? <img src={owner.url} alt="" loading="lazy" decoding="async" /> : <Media media={c.crew.photo} />}
+            <div
+              className={
+                owner !== undefined
+                  ? 'hb-promise__figure hb-promise__figure--owner'
+                  : 'hb-promise__figure'
+              }
+            >
+              {owner !== undefined ? (
+                <img src={owner.url} alt="" loading="lazy" decoding="async" />
+              ) : (
+                <Media media={c.crew.photo} />
+              )}
             </div>
           </div>
         </section>

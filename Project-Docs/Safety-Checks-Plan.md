@@ -46,6 +46,8 @@ Drafted 2026-11-16 for Alex's yes. Nothing is built until he says go. Four piece
 
 **Where the link's words live:** in each site's buttons and labels, like every other word on a site.
 
+**Done 2026-11-16:** built and tried by Alex; merged. The link is in all 11 footers (every design); a site's /report shows the report page on the site's own address (a redirect to bohdiai.com looped on the dev server). `site_reports`, `/api/report-site`, the Reports tab. Also (Alex): the admin's Messages, Reports and Feedback tabs show how many came in since he last opened them (`founder_seen`).
+
 ---
 
 ## 4. Suspend a site

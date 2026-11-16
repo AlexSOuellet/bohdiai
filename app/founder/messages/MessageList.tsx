@@ -1,8 +1,15 @@
 import type { FounderMessage } from '@/lib/founder/messages';
 import { shortDate } from '../format';
 
-export function MessageList({ messages }: { messages: readonly FounderMessage[] }): React.ReactElement {
-  if (messages.length === 0) return <p className="bk-note">No messages yet. When a maker uses Contact support, it shows here.</p>;
+export function MessageList({
+  messages,
+}: {
+  messages: readonly FounderMessage[];
+}): React.ReactElement {
+  if (messages.length === 0)
+    return (
+      <p className="bk-note">No messages yet. When a maker uses Contact support, it shows here.</p>
+    );
   return (
     <ul className="fd-messages">
       {messages.map((m) => (

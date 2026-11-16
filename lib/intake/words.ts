@@ -213,6 +213,30 @@ export const INTAKE_WORD_SPOTS = {
     closing: '',
     back: '',
   },
+  /** bohdiai.com/report, from "Report this site" in every site's footer (go-live step 3). */
+  report: {
+    metaTitle: '',
+    metaDescription: '',
+    title: '',
+    /** "{site}": the site's name, when the link said which. */
+    lede: '',
+    /** When the link didn't say which site. */
+    ledeNoSite: '',
+    site: '',
+    siteHint: '',
+    reason: '',
+    reasons: { illegal: '', hateful: '', scam: '', mine: '', other: '' },
+    details: '',
+    detailsHint: '',
+    email: '',
+    emailHint: '',
+    send: '',
+    sending: '',
+    sentTitle: '',
+    sentBody: '',
+    back: '',
+    errors: { site: '', reason: '', details: '', tooLong: '', email: '', notFound: '', failed: '' },
+  },
 } as const satisfies WordShape;
 
 export type IntakeWordSpots = typeof INTAKE_WORD_SPOTS;

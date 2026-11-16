@@ -19,7 +19,12 @@ export default async function FounderActPage({ searchParams }: Props): Promise<R
   const sites = await loadFounderSites(supabaseAdmin());
   const found = query === '' ? everySite(sites) : findSites(sites, query);
   const host = (await headers()).get('host');
-  const rows = await Promise.all(found.map(async (site) => ({ ...site, openUrl: await siteOpenUrl(site, site.subdomain, process.env['BACKEND_SESSION_SECRET'], host) })));
+  const rows = await Promise.all(
+    found.map(async (site) => ({
+      ...site,
+      openUrl: await siteOpenUrl(site, site.subdomain, process.env['BACKEND_SESSION_SECRET'], host),
+    })),
+  );
   return (
     <>
       <div className="bk-head">
@@ -39,7 +44,9 @@ export default async function FounderActPage({ searchParams }: Props): Promise<R
         </form>
         {query !== '' && rows.length === 0 && <p className="bk-note">Nothing matches “{query}”.</p>}
         {query === '' && rows.length === 0 && <p className="bk-note">No makers yet.</p>}
-        {query === '' && rows.length > 0 && <p className="bk-note">{`Every maker, ${rows.length} in all. Search to narrow it down.`}</p>}
+        {query === '' && rows.length > 0 && (
+          <p className="bk-note">{`Every maker, ${rows.length} in all. Search to narrow it down.`}</p>
+        )}
         {query !== '' && rows.length > 0 && (
           <p className="bk-note">
             <Link className="bk-link" href="/founder/act">

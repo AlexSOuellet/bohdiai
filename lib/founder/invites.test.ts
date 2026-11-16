@@ -3,22 +3,62 @@ import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 
-const m = vi.hoisted(() => ({ findUserByEmail: vi.fn(), createSite: vi.fn(), ownerOf: vi.fn(), createInviteCode: vi.fn(), findInviteCodes: vi.fn() }));
+const m = vi.hoisted(() => ({
+  findUserByEmail: vi.fn(),
+  createSite: vi.fn(),
+  ownerOf: vi.fn(),
+  createInviteCode: vi.fn(),
+  findInviteCodes: vi.fn(),
+}));
 vi.mock('@/lib/backend/user-lookup', () => ({ findUserByEmail: m.findUserByEmail }));
-vi.mock('@/lib/signup/server', () => ({ createSite: m.createSite, startPlanId: ({ plan }: { plan: string }) => `maker-${plan}` }));
+vi.mock('@/lib/signup/server', () => ({
+  createSite: m.createSite,
+  startPlanId: ({ plan }: { plan: string }) => `maker-${plan}`,
+}));
 vi.mock('@/lib/signup/confirm-email', () => ({ ownerOf: m.ownerOf }));
-vi.mock('@/lib/billing/promos', async (orig) => ({ ...(await orig<object>()), createInviteCode: m.createInviteCode, findInviteCodes: m.findInviteCodes }));
+vi.mock('@/lib/billing/promos', async (orig) => ({
+  ...(await orig<object>()),
+  createInviteCode: m.createInviteCode,
+  findInviteCodes: m.findInviteCodes,
+}));
 
-import { composeInviteEmail, inviteDiscount, inviteFree, loadWaitingInvites, resendDiscount, resendFree, type Invitee } from './invites';
+import {
+  composeInviteEmail,
+  inviteDiscount,
+  inviteFree,
+  loadWaitingInvites,
+  resendDiscount,
+  resendFree,
+  type Invitee,
+} from './invites';
 
 const APP = 'https://app.bohdiai.com';
-const who: Invitee = { name: 'Lena', email: 'lena@example.com', business: 'Saltmarsh', plan: 'full', note: '' };
+const who: Invitee = {
+  name: 'Lena',
+  email: 'lena@example.com',
+  business: 'Saltmarsh',
+  plan: 'full',
+  note: '',
+};
 const stripeStub = {} as Stripe;
-const code = { code: 'INVITE-ABC', percent: 100, months: 3, name: 'Lena', email: 'lena@example.com', business: 'Saltmarsh', plan: 'full', note: '' };
+const code = {
+  code: 'INVITE-ABC',
+  percent: 100,
+  months: 3,
+  name: 'Lena',
+  email: 'lena@example.com',
+  business: 'Saltmarsh',
+  plan: 'full',
+  note: '',
+};
 
 type Result = { data?: unknown; error: { message: string } | null };
 
-function fakeDb(tables: Record<string, Result> = {}, made: Result = { data: { user: { id: 'u1' } }, error: null }, account: Result = { data: { user: { app_metadata: { invite_open: true } } }, error: null }) {
+function fakeDb(
+  tables: Record<string, Result> = {},
+  made: Result = { data: { user: { id: 'u1' } }, error: null },
+  account: Result = { data: { user: { app_metadata: { invite_open: true } } }, error: null },
+) {
   const writes: { table: string; op: string; value?: unknown }[] = [];
   const createUser = vi.fn(async () => made);
   const getUserById = vi.fn(async () => account);
@@ -40,10 +80,21 @@ function fakeDb(tables: Record<string, Result> = {}, made: Result = { data: { us
     );
     return step;
   };
-  return { db: { from, auth: { admin: { createUser, getUserById, deleteUser } } } as unknown as SupabaseClient<Database>, writes, createUser, deleteUser };
+  return {
+    db: {
+      from,
+      auth: { admin: { createUser, getUserById, deleteUser } },
+    } as unknown as SupabaseClient<Database>,
+    writes,
+    createUser,
+    deleteUser,
+  };
 }
 
-const sendOk = () => vi.fn(async (_msg: { to: string; subject: string; text: string; html: string }) => ({ error: null }));
+const sendOk = () =>
+  vi.fn(async (_msg: { to: string; subject: string; text: string; html: string }) => ({
+    error: null,
+  }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -56,7 +107,17 @@ beforeEach(() => {
 });
 
 describe('composeInviteEmail', () => {
-  const base = { name: 'Lena', business: 'A & B', heading: 'A heading', offer: 'An offer', next: 'What’s next', button: 'Go', link: 'https://x.example/?a=1&b=2', lasts: 'One day', note: '' };
+  const base = {
+    name: 'Lena',
+    business: 'A & B',
+    heading: 'A heading',
+    offer: 'An offer',
+    next: 'What’s next',
+    button: 'Go',
+    link: 'https://x.example/?a=1&b=2',
+    lasts: 'One day',
+    note: '',
+  };
   it('says the offer, the link and who it’s from', () => {
     const mail = composeInviteEmail(base);
     expect(mail.subject).toBe('Your BohdiAI site for A & B');
@@ -76,9 +137,24 @@ describe('inviteFree', () => {
     const { db, writes, createUser } = fakeDb();
     const send = sendOk();
     expect(await inviteFree(db, who, APP, send)).toEqual({ ok: true });
-    expect(createUser).toHaveBeenCalledWith({ email: 'lena@example.com', email_confirm: true, user_metadata: { name: 'Lena' }, app_metadata: { invite_open: true } });
-    expect(m.createSite).toHaveBeenCalledWith(db, 'u1', expect.objectContaining({ plan: 'full', businessName: 'Saltmarsh', promoCode: '' }));
-    expect(writes).toEqual([{ table: 'tenants', op: 'update', value: { plan_comp: 'free', plan_comp_note: 'Invited by Alex' } }]);
+    expect(createUser).toHaveBeenCalledWith({
+      email: 'lena@example.com',
+      email_confirm: true,
+      user_metadata: { name: 'Lena' },
+      app_metadata: { invite_open: true },
+    });
+    expect(m.createSite).toHaveBeenCalledWith(
+      db,
+      'u1',
+      expect.objectContaining({ plan: 'full', businessName: 'Saltmarsh', promoCode: '' }),
+    );
+    expect(writes).toEqual([
+      {
+        table: 'tenants',
+        op: 'update',
+        value: { plan_comp: 'free', plan_comp_note: 'Invited by Alex' },
+      },
+    ]);
     const mail = send.mock.calls[0]?.[0];
     expect(mail?.to).toBe('lena@example.com');
     expect(mail?.text).toContain('no card to enter');
@@ -92,7 +168,9 @@ describe('inviteFree', () => {
     expect(createUser).not.toHaveBeenCalled();
   });
   it('says so when the link can’t be made', async () => {
-    await expect(inviteFree(fakeDb({}, { data: null, error: { message: 'down' } }).db, who, APP, sendOk())).rejects.toThrow('down');
+    await expect(
+      inviteFree(fakeDb({}, { data: null, error: { message: 'down' } }).db, who, APP, sendOk()),
+    ).rejects.toThrow('down');
   });
   it('leaves nothing behind when the email doesn’t go', async () => {
     const { db, writes, deleteUser } = fakeDb();
@@ -128,55 +206,128 @@ describe('without a secret to sign with', () => {
 describe('inviteDiscount', () => {
   it('emails a link with the code already on it', async () => {
     const send = sendOk();
-    expect(await inviteDiscount(stripeStub, who, { percent: 100, months: 3 }, 'https://bohdiai.com', send)).toEqual({ ok: true });
+    expect(
+      await inviteDiscount(
+        stripeStub,
+        who,
+        { percent: 100, months: 3 },
+        'https://bohdiai.com',
+        send,
+      ),
+    ).toEqual({ ok: true });
     const mail = send.mock.calls[0]?.[0];
     expect(mail?.text).toContain('https://bohdiai.com/start?plan=maker-full&code=INVITE-ABC');
     expect(mail?.text).toContain('3 months free');
   });
   it('turns away an email that already has an account', async () => {
     m.findUserByEmail.mockResolvedValue({ id: 'u9' });
-    expect(await inviteDiscount(stripeStub, who, { percent: 10, months: null }, 'https://bohdiai.com', sendOk())).toEqual({ ok: false, reason: 'exists' });
+    expect(
+      await inviteDiscount(
+        stripeStub,
+        who,
+        { percent: 10, months: null },
+        'https://bohdiai.com',
+        sendOk(),
+      ),
+    ).toEqual({ ok: false, reason: 'exists' });
     expect(m.createInviteCode).not.toHaveBeenCalled();
   });
   it('says so when the email doesn’t go', async () => {
-    await expect(inviteDiscount(stripeStub, who, { percent: 10, months: null }, 'https://bohdiai.com', vi.fn(async () => ({ error: { message: 'no send' } })))).rejects.toThrow('no send');
+    await expect(
+      inviteDiscount(
+        stripeStub,
+        who,
+        { percent: 10, months: null },
+        'https://bohdiai.com',
+        vi.fn(async () => ({ error: { message: 'no send' } })),
+      ),
+    ).rejects.toThrow('no send');
   });
 });
 
 describe('loadWaitingInvites', () => {
   it('lists free sites with no form sent, and open codes', async () => {
     m.findInviteCodes.mockResolvedValue([code]);
-    const { db } = fakeDb({ tenants: { data: [{ id: 't1', business_name: 'Saltmarsh' }, { id: 't2', business_name: 'Started' }], error: null }, intakes: { data: [{ tenant_id: 't2' }], error: null } });
+    const { db } = fakeDb({
+      tenants: {
+        data: [
+          { id: 't1', business_name: 'Saltmarsh' },
+          { id: 't2', business_name: 'Started' },
+        ],
+        error: null,
+      },
+      intakes: { data: [{ tenant_id: 't2' }], error: null },
+    });
     expect(await loadWaitingInvites(stripeStub, db)).toEqual([
-      { key: 't1', kind: 'free', name: 'Lena', email: 'lena@example.com', business: 'Saltmarsh', deal: 'Free site', tenantId: 't1', code: null },
-      { key: 'INVITE-ABC', kind: 'discount', name: 'Lena', email: 'lena@example.com', business: 'Saltmarsh', deal: '3 months free', tenantId: null, code: 'INVITE-ABC' },
+      {
+        key: 't1',
+        kind: 'free',
+        name: 'Lena',
+        email: 'lena@example.com',
+        business: 'Saltmarsh',
+        deal: 'Free site',
+        tenantId: 't1',
+        code: null,
+      },
+      {
+        key: 'INVITE-ABC',
+        kind: 'discount',
+        name: 'Lena',
+        email: 'lena@example.com',
+        business: 'Saltmarsh',
+        deal: '3 months free',
+        tenantId: null,
+        code: 'INVITE-ABC',
+      },
     ]);
   });
   it('still lists free sites with no Stripe', async () => {
-    const { db } = fakeDb({ tenants: { data: [{ id: 't1', business_name: 'Saltmarsh' }], error: null } });
+    const { db } = fakeDb({
+      tenants: { data: [{ id: 't1', business_name: 'Saltmarsh' }], error: null },
+    });
     expect((await loadWaitingInvites(null, db)).map((w) => w.key)).toEqual(['t1']);
     expect(m.findInviteCodes).not.toHaveBeenCalled();
   });
   it.each(['tenants', 'intakes'])('says so when %s can’t be read', async (table) => {
-    await expect(loadWaitingInvites(stripeStub, fakeDb({ [table]: { error: { message: 'down' } } }).db)).rejects.toThrow('down');
+    await expect(
+      loadWaitingInvites(stripeStub, fakeDb({ [table]: { error: { message: 'down' } } }).db),
+    ).rejects.toThrow('down');
   });
 });
 
 describe('sending again', () => {
   it('sends the same link for a free site', async () => {
-    const { db } = fakeDb({ tenants: { data: { business_name: 'Saltmarsh', plan: 'full' }, error: null } });
+    const { db } = fakeDb({
+      tenants: { data: { business_name: 'Saltmarsh', plan: 'full' }, error: null },
+    });
     const send = sendOk();
     expect(await resendFree(db, 't1', APP, send)).toBe('sent');
     expect(send.mock.calls[0]?.[0].text).toContain('https://app.bohdiai.com/auth/invite?t=u1.');
   });
   it('sends nothing once they’ve set a password', async () => {
     const send = sendOk();
-    expect(await resendFree(fakeDb({}, undefined, { data: { user: { app_metadata: {} } }, error: null }).db, 't1', APP, send)).toBe('started');
+    expect(
+      await resendFree(
+        fakeDb({}, undefined, { data: { user: { app_metadata: {} } }, error: null }).db,
+        't1',
+        APP,
+        send,
+      ),
+    ).toBe('started');
     expect(send).not.toHaveBeenCalled();
   });
   it('says so when the site or the account can’t be read', async () => {
-    await expect(resendFree(fakeDb({ tenants: { error: { message: 'down' } } }).db, 't1', APP, sendOk())).rejects.toThrow('down');
-    await expect(resendFree(fakeDb({}, undefined, { error: { message: 'no account' } }).db, 't1', APP, sendOk())).rejects.toThrow('no account');
+    await expect(
+      resendFree(fakeDb({ tenants: { error: { message: 'down' } } }).db, 't1', APP, sendOk()),
+    ).rejects.toThrow('down');
+    await expect(
+      resendFree(
+        fakeDb({}, undefined, { error: { message: 'no account' } }).db,
+        't1',
+        APP,
+        sendOk(),
+      ),
+    ).rejects.toThrow('no account');
   });
   it('sends a code’s invite again', async () => {
     m.findInviteCodes.mockResolvedValue([code]);
@@ -185,6 +336,8 @@ describe('sending again', () => {
     expect(send.mock.calls[0]?.[0].text).toContain('code=INVITE-ABC');
   });
   it('says so when the code is gone', async () => {
-    await expect(resendDiscount(stripeStub, fakeDb().db, 'X', 'https://bohdiai.com', sendOk())).rejects.toThrow('no waiting invite');
+    await expect(
+      resendDiscount(stripeStub, fakeDb().db, 'X', 'https://bohdiai.com', sendOk()),
+    ).rejects.toThrow('no waiting invite');
   });
 });
