@@ -29,7 +29,11 @@ describe('Your plan on Free', () => {
   it('with a card on file says it’s paid on Stripe’s page, the card can be changed there, and follows the yearly choice', () => {
     render(<FreeUpgrade plans={plans} cardOnFile note={null} />);
     const card = screen.getByRole('region', { name: 'Maker Showcase' });
-    expect(within(card).getByText(/the card on file or a different one; BohdiAI never sees it\. It’s \$5 today, then every month/)).toBeTruthy();
+    expect(
+      within(card).getByText(
+        /the card on file or a different one; BohdiAI never sees it\. It’s \$5 today, then every month/,
+      ),
+    ).toBeTruthy();
     fireEvent.click(within(card).getByRole('radio', { name: /a year/ }));
     expect(within(card).getByText(/It’s \$50 today, then every year/)).toBeTruthy();
   });

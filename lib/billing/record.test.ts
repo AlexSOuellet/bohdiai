@@ -18,6 +18,10 @@ const plans = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/backend/plan/apply', () => ({ applyPlan: plans.applyPlan }));
 vi.mock('@/lib/backend/plan/convert', () => ({ galleryFromProducts: plans.galleryFromProducts }));
+const removeAccount = vi.hoisted(() =>
+  vi.fn(async (): Promise<{ ok: true } | { ok: false; error: string }> => ({ ok: true })),
+);
+vi.mock('@/lib/backend/plan/close', () => ({ removeAccount }));
 
 import { claim, letGo, recordCheckout, recordSubscription } from './record';
 
@@ -220,6 +224,25 @@ describe('recordSubscription at the end of a term', () => {
       value: { status: 'offline', plan_cancels: false },
     });
     expect(calls).toHaveLength(2);
+  });
+  it('a closing account’s term ending removes everything, and only then (Alex, 2026-11-16)', async () => {
+    const { db, calls } = fakeDb();
+    await recordSubscription(
+      db,
+      subscription({ status: 'canceled', metadata: { tenant_id: 't1', close_account: 'yes' } }),
+    );
+    expect(removeAccount).toHaveBeenCalledWith(db, 't1');
+    expect(calls.some((c) => c.table === 'tenants')).toBe(false);
+    removeAccount.mockClear();
+    await recordSubscription(fakeDb().db, subscription({ status: 'canceled' }));
+    expect(removeAccount).not.toHaveBeenCalled();
+    removeAccount.mockResolvedValueOnce({ ok: false, error: 'files: down' });
+    await expect(
+      recordSubscription(
+        fakeDb().db,
+        subscription({ status: 'canceled', metadata: { tenant_id: 't1', close_account: 'yes' } }),
+      ),
+    ).rejects.toThrow(/close the account/);
   });
   it('says so when the site can’t be closed', async () => {
     const { db } = fakeDb({ tenants: [{ message: 'down' }] });

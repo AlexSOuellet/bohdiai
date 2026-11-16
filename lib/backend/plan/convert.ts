@@ -162,16 +162,14 @@ export async function galleryFromProducts(
   if (picked.length === 0) return { ok: true, count: 0 };
   const { error: dErr } = await db.from('gallery_items').delete().eq('tenant_id', tenantId);
   if (dErr !== null) return { ok: false, error: `gallery: ${dErr.message}` };
-  const { error } = await db
-    .from('gallery_items')
-    .insert(
-      picked.map((p, position) => ({
-        tenant_id: tenantId,
-        upload_id: p.uploadId,
-        position,
-        caption: p.name,
-      })),
-    );
+  const { error } = await db.from('gallery_items').insert(
+    picked.map((p, position) => ({
+      tenant_id: tenantId,
+      upload_id: p.uploadId,
+      position,
+      caption: p.name,
+    })),
+  );
   if (error !== null) return { ok: false, error: `gallery: ${error.message}` };
   // The family designs read Showcase's gallery from the catalog's ticks: tick exactly the picked ones.
   const { error: cErr } = await db

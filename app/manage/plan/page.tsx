@@ -8,6 +8,7 @@ import { longDay } from '@/lib/backend/plan/billing';
 import { SITE_CONTACT_EMAIL } from '@/lib/site/contact';
 import { PlanSummary, type PlanMode } from './PlanSummary';
 import { CancelPanel } from './CancelPanel';
+import { CloseAccount } from './CloseAccount';
 import { PromoPanel } from './PromoPanel';
 import { currentSubscription } from '@/lib/billing/maker-subscription';
 import { discountRunning } from '@/lib/billing/promos';
@@ -57,6 +58,7 @@ export default async function PlanPage({
         </div>
         <main id="main" className="bk-content">
           <FreeUpgrade plans={SITE_PLANS.map(planOf)} cardOnFile={hasCard} note={note} />
+          <CloseAccount siteName={site.businessName} endsOn="" closesNow closing={false} />
         </main>
       </>
     );
@@ -108,6 +110,14 @@ export default async function PlanPage({
           offerShowcase={state.plan !== 'showcase' && state.next !== 'showcase'}
           waiting={!state.cancels && isSitePlan(state.next) ? planOf(state.next).name : null}
         />
+        {!(state.cancels && !state.closing) && (
+          <CloseAccount
+            siteName={site.businessName}
+            endsOn={longDay(state.renewsOn)}
+            closesNow={sub === null || sub.unitCents === 0}
+            closing={state.closing}
+          />
+        )}
       </main>
     </>
   );

@@ -21,7 +21,13 @@ const revalidatePath = vi.fn();
 const writes: unknown[] = [];
 
 vi.mock('next/cache', () => ({ revalidatePath }));
-const billing = vi.hoisted(() => ({ currentSubscription: vi.fn(), setEndsWithTerm: vi.fn() }));
+const billing = vi.hoisted(() => ({
+  currentSubscription: vi.fn(),
+  setEndsWithTerm: vi.fn(),
+  endNow: vi.fn(),
+}));
+const removeAccount = vi.hoisted(() => vi.fn(async (): Promise<unknown> => ({ ok: true })));
+vi.mock('./close', async (orig) => ({ ...(await orig<object>()), removeAccount }));
 vi.mock('@/lib/billing/stripe', () => ({ stripe: () => ({}) }));
 vi.mock('@/lib/billing/maker-subscription', () => billing);
 const pc = vi.hoisted(() => ({
@@ -126,6 +132,7 @@ const {
   keepSite,
   changeBilling,
   finishPaidChange,
+  closeAccount,
 } = await import('./actions');
 
 /** The page Stripe's payment page was opened at, from the redirect it threw. */
@@ -147,6 +154,7 @@ function on(over: Partial<PlanState> = {}): PlanState {
     nextBilling: null,
     creditCents: 0,
     cancels: false,
+    closing: false,
     comp: null,
     nextGallery: [],
     today: '2026-10-09',
@@ -457,7 +465,12 @@ describe('cancel at the end of the term', () => {
     billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1' });
     expect(await cancelAtTermEnd()).toEqual({ ok: true });
     // Stripe moves to the $0 Free price at renewal; any downgrade waiting gives way to it.
-    expect(pc.changeAtRenewal).toHaveBeenCalledWith({}, 'sub_1', { id: 'price_free_monthly' }, { plan: 'free', billing: 'monthly' });
+    expect(pc.changeAtRenewal).toHaveBeenCalledWith(
+      {},
+      'sub_1',
+      { id: 'price_free_monthly' },
+      { plan: 'free', billing: 'monthly' },
+    );
     // The subscription carries on, at $0: nothing is ended.
     expect(billing.setEndsWithTerm).not.toHaveBeenCalledWith({}, { stripeId: 'sub_1' }, true);
     expect(await keepSite()).toEqual({ ok: true });
@@ -496,7 +509,9 @@ describe('cancel at the end of the term', () => {
 
   it('keeps the site when the maker changes their mind, and emails that too', async () => {
     expect(await keepSite()).toEqual({ ok: true });
-    expect(writes).toEqual([{ plan_cancels: false, plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
+    expect(writes).toEqual([
+      { plan_cancels: false, plan_next: null, plan_next_billing: null, plan_next_gallery: null },
+    ]);
     expect(sendPlanChange).toHaveBeenCalledWith(
       expect.objectContaining({ change: { kind: 'keep' } }),
     );
@@ -515,6 +530,95 @@ describe('cancel at the end of the term', () => {
     state.features = new Set();
     expect((await cancelAtTermEnd()).ok).toBe(false);
     expect(writes).toEqual([]);
+  });
+});
+
+describe('close my account (Alex, 2026-11-16)', () => {
+  beforeEach(() => {
+    writes.length = 0;
+    sendPlanChange.mockClear();
+    removeAccount.mockClear();
+    state.features = new Set(['plan']);
+    state.writeError = null;
+    state.plan = on({ plan: 'lite', renewsOn: '2026-12-16' });
+    billing.currentSubscription
+      .mockReset()
+      .mockResolvedValue({ stripeId: 'sub_1', unitCents: 1500 });
+    billing.setEndsWithTerm.mockReset().mockResolvedValue(undefined);
+    billing.endNow.mockReset().mockResolvedValue(undefined);
+    pc.dropAtRenewal.mockClear();
+  });
+
+  it('needs the site’s name typed to confirm, and does nothing without it', async () => {
+    expect(await closeAccount('Lena')).toEqual({
+      ok: false,
+      error: 'Type Lena Hart Decoupage exactly to close your account.',
+    });
+    expect(billing.setEndsWithTerm).not.toHaveBeenCalled();
+    expect(removeAccount).not.toHaveBeenCalled();
+    expect(writes).toEqual([]);
+  });
+
+  it('a paid site closes at the end of its term: Stripe ends it then, marked to remove the account', async () => {
+    expect(await closeAccount(' lena hart decoupage ')).toEqual({ ok: true });
+    expect(pc.dropAtRenewal).toHaveBeenCalledWith({}, 'sub_1');
+    expect(billing.setEndsWithTerm).toHaveBeenCalledWith(
+      {},
+      { stripeId: 'sub_1', unitCents: 1500 },
+      true,
+      true,
+    );
+    expect(writes).toEqual([
+      { plan_cancels: true, plan_next: null, plan_next_billing: null, plan_next_gallery: null },
+    ]);
+    expect(removeAccount).not.toHaveBeenCalled();
+    expect(sendPlanChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        change: { kind: 'close', on: expect.stringContaining('December 16, 2026') },
+      }),
+    );
+  });
+
+  it('nothing paid to run out: Stripe stops now, the maker is told, then everything goes', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1', unitCents: 0 });
+    expect(await redirected(() => closeAccount('Lena Hart Decoupage'))).toBe('/signin');
+    expect(billing.endNow).toHaveBeenCalledWith({}, { stripeId: 'sub_1', unitCents: 0 });
+    expect(sendPlanChange).toHaveBeenCalledWith(
+      expect.objectContaining({ change: { kind: 'closed' } }),
+    );
+    expect(removeAccount).toHaveBeenCalledWith(expect.anything(), 't1');
+    // A free site Stripe doesn't bill closes at once too.
+    billing.currentSubscription.mockResolvedValue(null);
+    billing.endNow.mockClear();
+    expect(await redirected(() => closeAccount('Lena Hart Decoupage'))).toBe('/signin');
+    expect(billing.endNow).not.toHaveBeenCalled();
+  });
+
+  it('says so when it can’t be done, and removes nothing it shouldn’t', async () => {
+    billing.setEndsWithTerm.mockRejectedValueOnce(new Error('stripe down'));
+    expect(await closeAccount('Lena Hart Decoupage')).toEqual({
+      ok: false,
+      error: 'Your account couldn’t be closed. Try again in a moment.',
+    });
+    expect(writes).toEqual([]);
+    billing.currentSubscription.mockResolvedValue(null);
+    removeAccount.mockResolvedValueOnce({ ok: false, error: 'files: down' });
+    expect(await closeAccount('Lena Hart Decoupage')).toEqual({
+      ok: false,
+      error: 'Your account couldn’t be closed. Try again in a moment.',
+    });
+  });
+
+  it('Keep my account undoes a close before the term ends', async () => {
+    expect(await keepSite()).toEqual({ ok: true });
+    expect(billing.setEndsWithTerm).toHaveBeenCalledWith(
+      {},
+      { stripeId: 'sub_1', unitCents: 1500 },
+      false,
+    );
+    expect(writes).toEqual([
+      { plan_cancels: false, plan_next: null, plan_next_billing: null, plan_next_gallery: null },
+    ]);
   });
 });
 

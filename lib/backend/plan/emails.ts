@@ -12,6 +12,8 @@ const PLAN_URL = 'https://app.bohdiai.com/manage/plan';
 
 export type PlanChange =
   | { kind: 'cancel'; on: string }
+  | { kind: 'close'; on: string }
+  | { kind: 'closed' }
   | { kind: 'keep' }
   | { kind: 'upgrade'; to: string }
   | { kind: 'downgrade'; to: string; on: string }
@@ -49,6 +51,18 @@ function planWords(
         subject: `${siteName}: your site will close on ${change.on}`,
         heading: 'You’re moving to Free',
         text: `You cancelled ${siteName}. Your site stays up until the end of your current term, ${change.on}. Then it comes down and you move to BohdiAI Free: nothing more is charged, and your products and tools stay. Nothing is deleted, and you can move back up any time.\n\nChanged your mind? Choose Keep my site on Your plan in your backend before ${change.on}.`,
+      };
+    case 'close':
+      return {
+        subject: `${siteName}: your account will close on ${change.on}`,
+        heading: 'Your account is closing',
+        text: `You chose to close your BohdiAI account for ${siteName}. Your site stays up until the end of your current term, ${change.on}. Then your account closes and everything in it is removed for good: your site, photos, products, events, sales and customers. Stripe keeps its own record of your past payments.\n\nChanged your mind? Choose Keep my account on Your plan in your backend before ${change.on}.`,
+      };
+    case 'closed':
+      return {
+        subject: `${siteName}: your account is closed`,
+        heading: 'Your account is closed',
+        text: `Your BohdiAI account for ${siteName} is closed, and everything in it has been removed. This is the last email you’ll get from BohdiAI. Thank you for making things with us, and good luck with your work.`,
       };
     case 'keep':
       return {

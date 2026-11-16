@@ -14,6 +14,7 @@ import type { Database } from '@/lib/database.types';
 import { isAccountPlan } from '@/lib/signup/request';
 import { recordSignupPromo } from './promos';
 import { planOfKey } from './plan-change';
+import { removeAccount } from '@/lib/backend/plan/close';
 import { applyPlan } from '@/lib/backend/plan/apply';
 import { galleryFromProducts } from '@/lib/backend/plan/convert';
 import { GALLERY_LIMIT } from '@/lib/backend/gallery/gallery-form';
@@ -145,6 +146,16 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
     .eq('stripe_subscription_id', sub.id);
   if (error !== null) throw new Error(`Could not update the billing record: ${error.message}`);
   const tenantId = sub.metadata['tenant_id'];
+  // Close my account (Alex, 2026-11-16): the term is over, so everything is removed.
+  if (
+    sub.status === 'canceled' &&
+    tenantId !== undefined &&
+    sub.metadata['close_account'] === 'yes'
+  ) {
+    const removed = await removeAccount(db, tenantId);
+    if (!removed.ok) throw new Error(`Could not close the account: ${removed.error}`);
+    return;
+  }
   // The term is over: the site comes down, kept and hidden, never deleted.
   if (sub.status === 'canceled' && tenantId !== undefined) {
     const { error: downErr } = await db

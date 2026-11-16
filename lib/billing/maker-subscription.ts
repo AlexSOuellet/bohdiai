@@ -50,11 +50,22 @@ export async function currentSubscription(
   };
 }
 
-/** Tells Stripe whether the plan ends with this term. Stripe's notice updates our record. */
+/** Tells Stripe whether the plan ends with this term. Stripe's notice updates our record.
+ *  `close`: the whole account is removed when it ends (Close my account, Alex 2026-11-16);
+ *  anything else clears that. */
 export async function setEndsWithTerm(
   s: Stripe,
   sub: MakerSubscription,
   ends: boolean,
+  close = false,
 ): Promise<void> {
-  await s.subscriptions.update(sub.stripeId, { cancel_at_period_end: ends });
+  await s.subscriptions.update(sub.stripeId, {
+    cancel_at_period_end: ends,
+    metadata: { close_account: ends && close ? 'yes' : '' },
+  });
+}
+
+/** Ends the subscription now (Close my account on a site with nothing paid to run out). */
+export async function endNow(s: Stripe, sub: MakerSubscription): Promise<void> {
+  await s.subscriptions.cancel(sub.stripeId);
 }

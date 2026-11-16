@@ -24,12 +24,14 @@ import { headersOrigin } from '@/lib/backend/request-origin';
 import { finishPayPage, startPayPage, type PayFor } from '@/lib/billing/pay-change';
 import { ONBOARDING_PATH } from '@/lib/signup/onboarding';
 import { stepUp } from './free-up';
+import { nameMatches, removeAccount } from './close';
+import { isFounder } from '@/lib/founder/access';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { stripe } from '@/lib/billing/stripe';
-import { currentSubscription, setEndsWithTerm } from '@/lib/billing/maker-subscription';
+import { currentSubscription, endNow, setEndsWithTerm } from '@/lib/billing/maker-subscription';
 import {
   changeAtRenewal,
   changeNow,
@@ -199,6 +201,73 @@ export async function cancelAtTermEnd(): Promise<ChangePlanResult> {
     return { ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' };
   }
   await tell({ kind: 'cancel', on: longDay(state.renewsOn) });
+  return done();
+}
+
+/**
+ * Close my account (Alex, 2026-11-16). The maker types the site's name to confirm.
+ * A paid site closes at the end of its term: Stripe ends the subscription then, marked
+ * to remove the account, and Stripe's notice that day does the removal
+ * (lib/billing/record.ts). Until then Keep my account undoes it. A site with nothing
+ * paid to run out (Free, or a free site) closes at once.
+ */
+export async function closeAccount(typed: unknown): Promise<ChangePlanResult> {
+  const { user, site } = await requireActingSite();
+  const on = await getSiteFeatures(site.tenantId);
+  if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
+  if (!nameMatches(typed, site.businessName))
+    return { ok: false, error: `Type ${site.businessName} exactly to close your account.` };
+  const db = supabaseAdmin();
+  const state = await loadPlanState(db, site.tenantId);
+  const sub = await currentSubscription(db, site.tenantId);
+  const failed = 'Your account couldn’t be closed. Try again in a moment.';
+
+  if (sub === null || sub.unitCents === 0 || state === null) {
+    try {
+      // Nothing paid to run out: Stripe stops at once, then everything goes.
+      if (sub !== null) await endNow(stripe(), sub);
+      await tell({ kind: 'closed' });
+      const removed = await removeAccount(db, site.tenantId);
+      if (!removed.ok) {
+        logger.error('close account failed', { tenantId: site.tenantId, error: removed.error });
+        return { ok: false, error: failed };
+      }
+    } catch (err) {
+      logger.error('close account failed', {
+        tenantId: site.tenantId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return { ok: false, error: failed };
+    }
+    redirect((isFounder(user.id) ? '/founder/act' : '/signin') as Route);
+  }
+
+  try {
+    const s = stripe();
+    // A downgrade or a move to Free waiting for renewal gives way to closing.
+    await dropAtRenewal(s, sub.stripeId);
+    await setEndsWithTerm(s, sub, true, true);
+  } catch (err) {
+    logger.error('plan: Stripe not told of the close', {
+      tenantId: site.tenantId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, error: failed };
+  }
+  const { error } = await db
+    .from('tenants')
+    .update({
+      plan_cancels: true,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_next_gallery: null,
+    })
+    .eq('id', site.tenantId);
+  if (error !== null) {
+    logger.error('close account not saved', { tenantId: site.tenantId, error: error.message });
+    return { ok: false, error: failed };
+  }
+  await tell({ kind: 'close', on: longDay(state.renewsOn) });
   return done();
 }
 
