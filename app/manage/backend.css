@@ -286,6 +286,7 @@ a.bk-step:hover { background: var(--bk-ground); }
 .bk-pill[data-status='draft'] { background: oklch(0.72 0.13 68 / 22%); color: oklch(0.47 0.1 62); }
 .bk-pill[data-status='pending'] { background: oklch(0.72 0.13 68 / 22%); color: oklch(0.47 0.1 62); }
 .bk-pill[data-status='paid'] { background: oklch(0.55 0.09 170 / 15%); color: oklch(0.42 0.08 170); }
+.bk-pill[data-status='suspended'] { background: oklch(0.51 0.18 27 / 12%); color: var(--bk-danger); }
 .bk-order { display: block; }
 .bk-order-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; }
 .bk-order-items { margin: 0.5rem 0; padding-left: 1.1rem; }
