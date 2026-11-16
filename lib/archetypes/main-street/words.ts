@@ -41,6 +41,8 @@ export const FAMILY_WORD_SPOTS = {
   footerTerms: '',
   /** The footer link owners use to reach their backend (/admin). */
   footerOwnerLogin: '',
+  /** "Report this site" (/report, go-live step 3). */
+  footerReport: '',
   footerCreditPrefix: '',
   footerCreditBrand: '',
   /** The footer's social icons, named for screen readers. */
@@ -194,4 +196,8 @@ export const FAMILY_WORD_SPOTS = {
 export type FamilyWords = Words<typeof FAMILY_WORD_SPOTS>;
 
 /** A page painted with no site behind it (the design previews): every spot blank. */
-export const FAMILY_NO_WORDS: FamilyWords = wordsFrom(FAMILY_WORD_SPOTS, FAMILY_WORDS_PREFIX, new Map());
+export const FAMILY_NO_WORDS: FamilyWords = wordsFrom(
+  FAMILY_WORD_SPOTS,
+  FAMILY_WORDS_PREFIX,
+  new Map(),
+);

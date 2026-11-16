@@ -246,6 +246,8 @@ export const CARD_WORD_SPOTS = {
     privacy: '',
     terms: '',
     ownerLogin: '',
+    /** "Report this site" (/report, go-live step 3). */
+    report: '',
     creditPrefix: '',
     creditBrand: '',
   },

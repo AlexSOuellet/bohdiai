@@ -2849,6 +2849,41 @@ export type Database = {
           },
         ];
       };
+      site_reports: {
+        Row: {
+          created_at: string;
+          details: string;
+          email: string;
+          id: string;
+          reason: string;
+          tenant_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          details?: string;
+          email?: string;
+          id?: string;
+          reason: string;
+          tenant_id: string;
+        };
+        Update: {
+          created_at?: string;
+          details?: string;
+          email?: string;
+          id?: string;
+          reason?: string;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'site_reports_tenant_id_fkey';
+            columns: ['tenant_id'];
+            isOneToOne: false;
+            referencedRelation: 'tenants';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       site_scenes: {
         Row: {
           scene_key: string | null;

@@ -35,7 +35,15 @@ function Frame({ children }: { children: ReactNode }): ReactElement {
   );
 }
 
-function Footer({ name, platformCredit, w }: { name: string; platformCredit: boolean; w: CardWords['footer'] }): ReactElement {
+function Footer({
+  name,
+  platformCredit,
+  w,
+}: {
+  name: string;
+  platformCredit: boolean;
+  w: CardWords['footer'];
+}): ReactElement {
   return (
     <footer className="bb-foot">
       <span>
@@ -43,6 +51,9 @@ function Footer({ name, platformCredit, w }: { name: string; platformCredit: boo
       </span>
       <a href="/privacy">{w.privacy}</a>
       <a href="/terms">{w.terms}</a>
+      <a href="/report" rel="nofollow">
+        {w.report}
+      </a>
       {platformCredit && (
         <a href={PLATFORM_URL}>
           {w.creditPrefix} {w.creditBrand}
@@ -52,12 +63,27 @@ function Footer({ name, platformCredit, w }: { name: string; platformCredit: boo
   );
 }
 
-function Photo({ photo, index, eager, w }: { photo: GalleryItem; index: number; eager: boolean; w: CardWords['work'] }): ReactElement {
+function Photo({
+  photo,
+  index,
+  eager,
+  w,
+}: {
+  photo: GalleryItem;
+  index: number;
+  eager: boolean;
+  w: CardWords['work'];
+}): ReactElement {
   return (
     <Snapshot index={index} className="bb-photo" label={photoLabel(photo.caption, index + 1, w)}>
       {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={photo.url} alt={photo.caption} loading={eager ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} />
+      <img
+        src={photo.url}
+        alt={photo.caption}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchPriority={index === 0 ? 'high' : 'auto'}
+      />
       {photo.caption !== '' && <span className="bb-photo__cap">{photo.caption}</span>}
     </Snapshot>
   );
@@ -128,7 +154,12 @@ export function BulletinLanding({
                     return (
                       <li key={d.id}>
                         <b>{piece.day}</b> {piece.market}
-                        {piece.town !== '' && <span>{w.dates.separator}{piece.town}</span>}
+                        {piece.town !== '' && (
+                          <span>
+                            {w.dates.separator}
+                            {piece.town}
+                          </span>
+                        )}
                       </li>
                     );
                   })}

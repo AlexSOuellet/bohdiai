@@ -33,13 +33,26 @@ const ROUTES = [
   { name: 'order', load: () => import('./order-request/route'), shape: { error: 'slow down' } },
   { name: 'market', load: () => import('./market/hold/route'), shape: { error: 'slow down' } },
   { name: 'market-step', load: () => import('./market/paid/route'), shape: { error: 'slow down' } },
-  { name: 'market-step', load: () => import('./market/release/route'), shape: { error: 'slow down' } },
+  {
+    name: 'market-step',
+    load: () => import('./market/release/route'),
+    shape: { error: 'slow down' },
+  },
   { name: 'inquiry', load: () => import('./inquiry/route'), shape: { error: 'slow down' } },
-  { name: 'notify-interest', load: () => import('./notify-interest/route'), shape: { error: 'slow down' } },
+  {
+    name: 'notify-interest',
+    load: () => import('./notify-interest/route'),
+    shape: { error: 'slow down' },
+  },
   { name: 'intake', load: () => import('./intake/route'), shape: { error: 'slow down' } },
   { name: 'signup', load: () => import('./signup/route'), shape: { error: 'slow down' } },
   { name: 'feedback', load: () => import('./tool-feedback/route'), shape: { error: 'slow down' } },
-  { name: 'describe-try', load: () => import('./try-describe/route'), shape: { error: 'slow down' } },
+  {
+    name: 'describe-try',
+    load: () => import('./try-describe/route'),
+    shape: { error: 'slow down' },
+  },
+  { name: 'report', load: () => import('./report-site/route'), shape: { error: 'slow down' } },
 ] as const;
 
 type Post = (req: Request) => Promise<Response>;
@@ -60,15 +73,22 @@ describe('public forms are rate limited', () => {
 
   for (const [i, route] of ROUTES.entries()) {
     it(`${route.name}: a turned-away visitor gets the limiter's answer and nothing runs`, async () => {
-      formLimitResponse.mockImplementation((_req: Request, _form: string, toBody: (m: string) => unknown) =>
-        Promise.resolve(Response.json(toBody('slow down'), { status: 429 })),
+      formLimitResponse.mockImplementation(
+        (_req: Request, _form: string, toBody: (m: string) => unknown) =>
+          Promise.resolve(Response.json(toBody('slow down'), { status: 429 })),
       );
       const POST = loaded[i];
       if (POST === undefined) throw new Error(`${route.name} was not loaded`);
-      const res = await POST(new Request('https://shop.bohdiai.com/api/x', { method: 'POST', body: '{}' }));
+      const res = await POST(
+        new Request('https://shop.bohdiai.com/api/x', { method: 'POST', body: '{}' }),
+      );
       expect(res.status).toBe(429);
       expect(await res.json()).toEqual(route.shape);
-      expect(formLimitResponse).toHaveBeenCalledWith(expect.any(Request), route.name, expect.any(Function));
+      expect(formLimitResponse).toHaveBeenCalledWith(
+        expect.any(Request),
+        route.name,
+        expect.any(Function),
+      );
       expect(touched).not.toHaveBeenCalled();
     });
   }

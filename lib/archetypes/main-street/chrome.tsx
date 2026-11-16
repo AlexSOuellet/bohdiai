@@ -1540,7 +1540,26 @@ export function skinVarsCss(skin: ArchetypeTheme): string {
   `;
 }
 
-export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeTheme; family?: { key: string; wallpaperUrl: string; textureOpacity: number; textureMode?: 'cover' | 'multiply' | 'screen'; textureFocus?: string; textureTone?: 'light' | 'dark'; textureVideo?: string; textureOwn?: boolean } | undefined; children: React.ReactNode }) {
+export function MainStreetRoot({
+  skin,
+  family,
+  children,
+}: {
+  skin: ArchetypeTheme;
+  family?:
+    | {
+        key: string;
+        wallpaperUrl: string;
+        textureOpacity: number;
+        textureMode?: 'cover' | 'multiply' | 'screen';
+        textureFocus?: string;
+        textureTone?: 'light' | 'dark';
+        textureVideo?: string;
+        textureOwn?: boolean;
+      }
+    | undefined;
+  children: React.ReactNode;
+}) {
   return (
     <>
       <link rel="stylesheet" href={fontHref(skin)} />
@@ -1552,10 +1571,27 @@ export function MainStreetRoot({ skin, family, children }: { skin: ArchetypeThem
           }}
         />
       )}
-      <div className="arch-main-street" data-ms-family={family?.key} data-ms-texture-mode={family?.textureMode ?? 'cover'} data-ms-texture-tone={family?.textureTone} data-ms-texture-own={family?.textureOwn === true ? 'true' : undefined}>
+      <div
+        className="arch-main-street"
+        data-ms-family={family?.key}
+        data-ms-texture-mode={family?.textureMode ?? 'cover'}
+        data-ms-texture-tone={family?.textureTone}
+        data-ms-texture-own={family?.textureOwn === true ? 'true' : undefined}
+      >
         <div className="ms-grain" aria-hidden />
         {family && <div className="ms-family-texture" aria-hidden />}
-        {family?.textureVideo !== undefined && <video className="ms-family-video" src={family.textureVideo} poster={family.wallpaperUrl} autoPlay muted loop playsInline aria-hidden />}
+        {family?.textureVideo !== undefined && (
+          <video
+            className="ms-family-video"
+            src={family.textureVideo}
+            poster={family.wallpaperUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-hidden
+          />
+        )}
         {children}
       </div>
     </>
@@ -1567,14 +1603,29 @@ export function Media({
   className,
   style,
 }: {
-  media: { kind?: 'video' | 'image' | 'still'; url?: string | undefined; poster?: string | undefined; alt: string };
+  media: {
+    kind?: 'video' | 'image' | 'still';
+    url?: string | undefined;
+    poster?: string | undefined;
+    alt: string;
+  };
   className?: string;
   style?: React.CSSProperties;
 }) {
   const cls = ['archetype-photo', className].filter(Boolean).join(' ');
   if (media.kind === 'video' && media.url) {
     return (
-      <video className={cls} style={style} src={media.url} poster={media.poster} autoPlay loop muted playsInline aria-label={media.alt} />
+      <video
+        className={cls}
+        style={style}
+        src={media.url}
+        poster={media.poster}
+        autoPlay
+        loop
+        muted
+        playsInline
+        aria-label={media.alt}
+      />
     );
   }
   if (media.url) return <img className={cls} style={style} src={media.url} alt={media.alt} />;
@@ -1586,7 +1637,10 @@ export function Media({
  *  Fixed under §1.7: Bohdi does not author nav; the renderer lists the pages
  *  the store actually has, named in the site's own words. Maker per-page on/off
  *  toggles arrive with Editor Door 1 (Phase 3); until then every page shows. */
-export const MAIN_STREET_NAV: ReadonlyArray<{ href: string; word: 'navShop' | 'navCollections' | 'navAbout' | 'navEvents' | 'navContact' }> = [
+export const MAIN_STREET_NAV: ReadonlyArray<{
+  href: string;
+  word: 'navShop' | 'navCollections' | 'navAbout' | 'navEvents' | 'navContact';
+}> = [
   { href: '/shop', word: 'navShop' },
   { href: '/collections', word: 'navCollections' },
   { href: '/about', word: 'navAbout' },
@@ -1629,7 +1683,15 @@ export function WordmarkLink({
   );
 }
 
-function NavLink({ href, label, active = false }: { href: string; label: React.ReactNode; active?: boolean }) {
+function NavLink({
+  href,
+  label,
+  active = false,
+}: {
+  href: string;
+  label: React.ReactNode;
+  active?: boolean;
+}) {
   return (
     <Type
       as="a"
@@ -1662,17 +1724,30 @@ export function Nav({
   currentHref?: string | undefined;
 }) {
   // A one-page site (Showcase) jumps down its home page; otherwise Showcase still has no shop or collections.
-  const items = identity.onePage === true
-    ? ONE_PAGE_NAV.map((n) => ({ href: n.href, label: words[n.word] }))
-    : identity.showsShop === false
-      ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections')
-      : identity.showsCollections === false
-        ? resolveNav(words).filter((n) => n.href !== '/collections')
-        : resolveNav(words);
+  const items =
+    identity.onePage === true
+      ? ONE_PAGE_NAV.map((n) => ({ href: n.href, label: words[n.word] }))
+      : identity.showsShop === false
+        ? resolveNav(words).filter((n) => n.href !== '/shop' && n.href !== '/collections')
+        : identity.showsCollections === false
+          ? resolveNav(words).filter((n) => n.href !== '/collections')
+          : resolveNav(words);
   // Only a shop that sells online (Full) has a cart to link to.
   // A shop whose buyers can sign in (Full, her switch on) links to their account.
-  const withAccount: MobileNavItem[] = identity.accountLabel === undefined ? [...items] : [...items, { href: '/account', label: identity.accountLabel }];
-  const allItems: MobileNavItem[] = identity.sellsOnline === true ? [...withAccount, { href: '/cart', label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} /> }] : withAccount;
+  const withAccount: MobileNavItem[] =
+    identity.accountLabel === undefined
+      ? [...items]
+      : [...items, { href: '/account', label: identity.accountLabel }];
+  const allItems: MobileNavItem[] =
+    identity.sellsOnline === true
+      ? [
+          ...withAccount,
+          {
+            href: '/cart',
+            label: <CartCount label={words.cart.navCount} labelEmpty={words.navCart} />,
+          },
+        ]
+      : withAccount;
   const variant = identity.navVariant ?? 'standard';
 
   if (variant === 'split-center') {
@@ -1683,13 +1758,23 @@ export function Nav({
       <div className="ms-nav-split">
         <div className="ms-nav-links ms-nav-split-left">
           {left.map((item) => (
-            <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
+            <NavLink
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              active={item.href === currentHref}
+            />
           ))}
         </div>
         <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
         <div className="ms-nav-links ms-nav-split-right">
           {right.map((item) => (
-            <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
+            <NavLink
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              active={item.href === currentHref}
+            />
           ))}
         </div>
         <MainStreetMobileNav items={allItems} words={words} />
@@ -1730,7 +1815,12 @@ export function Nav({
                 {item.label}
               </Type>
             ) : (
-              <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                active={item.href === currentHref}
+              />
             ),
           )}
         </div>
@@ -1744,7 +1834,12 @@ export function Nav({
       <WordmarkLink wordmark={identity.wordmark} logoUrl={identity.logoUrl} />
       <div className="ms-nav-links">
         {allItems.map((item) => (
-          <NavLink key={item.href} href={item.href} label={item.label} active={item.href === currentHref} />
+          <NavLink
+            key={item.href}
+            href={item.href}
+            label={item.label}
+            active={item.href === currentHref}
+          />
         ))}
       </div>
       <MainStreetMobileNav items={allItems} words={words} />
@@ -1757,21 +1852,38 @@ export function Nav({
  * bohdiai.com address. A shop on its own custom domain shows only its own name
  * (wired with custom domains; until then every shop is on a subdomain).
  */
-export function MainStreetFooter({ shopName, words, platformCredit = true, socials }: { shopName: string; words: FamilyWords; platformCredit?: boolean; socials?: MainStreetView['socials'] }) {
+export function MainStreetFooter({
+  shopName,
+  words,
+  platformCredit = true,
+  socials,
+}: {
+  shopName: string;
+  words: FamilyWords;
+  platformCredit?: boolean;
+  socials?: MainStreetView['socials'];
+}) {
   return (
     <footer className="ms-footer">
       {/* The social icons get their own line, above the name and the footer links. */}
       {socials !== undefined && (
-        <SocialIcons facebookUrl={socials.facebookUrl} instagramUrl={socials.instagramUrl} className="ms-footer-social" labels={{ facebook: words.footerFacebook, instagram: words.footerInstagram }} showNames nameType="navLabel" />
+        <SocialIcons
+          facebookUrl={socials.facebookUrl}
+          instagramUrl={socials.instagramUrl}
+          className="ms-footer-social"
+          labels={{ facebook: words.footerFacebook, instagram: words.footerInstagram }}
+          showNames
+          nameType="navLabel"
+        />
       )}
-      <Type as="span" role="wordmark">{shopName}</Type>
+      <Type as="span" role="wordmark">
+        {shopName}
+      </Type>
       <div className="ms-footer-row">
         <Type as={Link} role="legal" href="/" className="ms-footer-link">
           {words.footerHome}
         </Type>
-        <IntroReplayLink className="ms-footer-link">
-          {words.footerIntro}
-        </IntroReplayLink>
+        <IntroReplayLink className="ms-footer-link">{words.footerIntro}</IntroReplayLink>
         {/* The standalone testimonials page is disabled for now (reviews live on the
             home sampling); no footer link until the full page returns. */}
         <Type as="a" role="legal" href="/privacy" className="ms-footer-link">
@@ -1782,6 +1894,9 @@ export function MainStreetFooter({ shopName, words, platformCredit = true, socia
         </Type>
         <Type as="a" role="legal" href="/admin" rel="nofollow" className="ms-footer-link">
           {words.footerOwnerLogin}
+        </Type>
+        <Type as="a" role="legal" href="/report" rel="nofollow" className="ms-footer-link">
+          {words.footerReport}
         </Type>
         <Type as="span" role="legal" className="ms-footer-legal">
           &copy; {shopName}

@@ -18,7 +18,15 @@ import { CardContactForm } from './CardContactForm';
 import { SocialIcons } from './SocialIcons';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { SHORELINE_FONTS_HREF, shorelineCss } from './shoreline-styles';
-import { bioParagraphs, initials, marketDay, marketName, photoLabel, type CardData, type Portrait } from './data';
+import {
+  bioParagraphs,
+  initials,
+  marketDay,
+  marketName,
+  photoLabel,
+  type CardData,
+  type Portrait,
+} from './data';
 
 const TOUCH_ID = 'write';
 
@@ -30,7 +38,13 @@ export function nameParts(name: string): { text: string; amp: boolean }[] {
     .map((text) => ({ text, amp: text === '&' }));
 }
 
-export function Frame({ children, look }: { children: ReactNode; look?: ShorelineLook | undefined }): ReactElement {
+export function Frame({
+  children,
+  look,
+}: {
+  children: ReactNode;
+  look?: ShorelineLook | undefined;
+}): ReactElement {
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,7 +54,9 @@ export function Frame({ children, look }: { children: ReactNode; look?: Shorelin
       <style dangerouslySetInnerHTML={{ __html: shorelineCss() + (look?.css ?? '') }} />
       <div className="sl" data-design="shoreline" data-look={look?.key}>
         <div className="sl-sea" aria-hidden="true">
-          {look?.seaVideo != null && <video className="sl-sea-video" src={look.seaVideo} autoPlay muted loop playsInline />}
+          {look?.seaVideo != null && (
+            <video className="sl-sea-video" src={look.seaVideo} autoPlay muted loop playsInline />
+          )}
         </div>
         {children}
       </div>
@@ -64,12 +80,21 @@ export function Footer({
 }): ReactElement {
   return (
     <footer className="sl-foot" aria-label={w.footer.label}>
-      <SocialIcons facebookUrl={social.facebookUrl} instagramUrl={social.instagramUrl} className="sl-social" labels={w.touch} showNames />
+      <SocialIcons
+        facebookUrl={social.facebookUrl}
+        instagramUrl={social.instagramUrl}
+        className="sl-social"
+        labels={w.touch}
+        showNames
+      />
       <span>
         © {new Date().getFullYear()} {name}
       </span>
       <a href="/privacy">{w.footer.privacy}</a>
       <a href="/terms">{w.footer.terms}</a>
+      <a href="/report" rel="nofollow">
+        {w.footer.report}
+      </a>
       <a href="/admin" rel="nofollow">
         {w.footer.ownerLogin}
       </a>
@@ -94,13 +119,26 @@ export function PortraitPrint({ portrait }: { portrait: Portrait | null }): Reac
   );
 }
 
-export function Print({ photo, index, w }: { photo: GalleryItem; index: number; w: CardWords['work'] }): ReactElement {
+export function Print({
+  photo,
+  index,
+  w,
+}: {
+  photo: GalleryItem;
+  index: number;
+  w: CardWords['work'];
+}): ReactElement {
   return (
     <li>
       <Snapshot index={index} className="sl-print" label={photoLabel(photo.caption, index + 1, w)}>
         {/* The owner's own upload, already shrunk at upload — a plain img like the other maker-photo spots. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photo.url} alt={photo.caption} loading={index < 3 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} />
+        <img
+          src={photo.url}
+          alt={photo.caption}
+          loading={index < 3 ? 'eager' : 'lazy'}
+          fetchPriority={index === 0 ? 'high' : 'auto'}
+        />
         {photo.caption !== '' && <span aria-hidden="true">{photo.caption}</span>}
       </Snapshot>
     </li>
@@ -133,9 +171,13 @@ export function ShorelineLanding({
       <PhotoViewerProvider photos={photos} w={w.lightbox}>
         <header className="sl-sky sl-sky--home">
           <h1 className="sl-name">
-            {nameParts(data.opening?.headline ?? name).map((part, i) => (part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>))}
+            {nameParts(data.opening?.headline ?? name).map((part, i) =>
+              part.amp ? <em key={i}>{part.text}</em> : <span key={i}>{part.text}</span>,
+            )}
           </h1>
-          {(data.opening?.line ?? p.kicker) !== '' && <p className="sl-kicker">{data.opening?.line ?? p.kicker}</p>}
+          {(data.opening?.line ?? p.kicker) !== '' && (
+            <p className="sl-kicker">{data.opening?.line ?? p.kicker}</p>
+          )}
           {p.makes.length > 0 && (
             <ul className="sl-makes" aria-label={w.shoreline.makesLabel}>
               {p.makes.map((m) => (
@@ -207,7 +249,11 @@ export function ShorelineLanding({
               <span className="sl-seal" aria-hidden="true">
                 {initials(name)}
               </span>
-              <h2>{p.signature === '' ? w.shoreline.touchNoName : fill(w.shoreline.touch, { name: p.signature })}</h2>
+              <h2>
+                {p.signature === ''
+                  ? w.shoreline.touchNoName
+                  : fill(w.shoreline.touch, { name: p.signature })}
+              </h2>
               <p>{w.shoreline.lede}</p>
               <CardContactForm tenantId={tenantId} w={w.form} />
             </section>
@@ -260,7 +306,12 @@ export function ShorelineContentPage({
           )}
         </article>
       </main>
-      <Footer name={name} platformCredit={platformCredit} w={w} {...(social !== undefined ? { social } : {})} />
+      <Footer
+        name={name}
+        platformCredit={platformCredit}
+        w={w}
+        {...(social !== undefined ? { social } : {})}
+      />
     </Frame>
   );
 }

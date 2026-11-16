@@ -180,6 +180,8 @@ export const NURSERY_WORD_SPOTS = {
     empowered: '',
     terms: '',
     privacy: '',
+    /** "Report this site" (/report, go-live step 3). */
+    report: '',
     year: '',
   },
   separator: '',

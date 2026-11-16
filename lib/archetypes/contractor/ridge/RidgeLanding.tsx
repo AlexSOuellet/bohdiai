@@ -21,7 +21,11 @@ import { ridgeCss, RIDGE_FONTS_HREF } from './styles';
 const ESTIMATE_ID = 'estimate';
 
 function Icon({ name, fill }: { name: string; fill?: boolean }): ReactElement {
-  return <span className={fill === true ? 'rg-icon rg-icon--fill' : 'rg-icon'} aria-hidden="true">{name}</span>;
+  return (
+    <span className={fill === true ? 'rg-icon rg-icon--fill' : 'rg-icon'} aria-hidden="true">
+      {name}
+    </span>
+  );
 }
 
 /** Header, footer and the phone thumb bar around any page body. */
@@ -48,8 +52,14 @@ export function RidgeShell({
       <link rel="stylesheet" href={RIDGE_FONTS_HREF} />
       <style dangerouslySetInnerHTML={{ __html: ridgeCss(palette) }} />
       <div className="rg">
-        <a className="rg-skip" href={`/#${ESTIMATE_ID}`}>{w.skipToEstimate}</a>
-        {c.notice !== undefined && <p className="rg-notice"><Icon name="campaign" /> {c.notice}</p>}
+        <a className="rg-skip" href={`/#${ESTIMATE_ID}`}>
+          {w.skipToEstimate}
+        </a>
+        {c.notice !== undefined && (
+          <p className="rg-notice">
+            <Icon name="campaign" /> {c.notice}
+          </p>
+        )}
 
         <header className="rg-head">
           <div className="rg-wrap rg-head__row">
@@ -58,8 +68,12 @@ export function RidgeShell({
               <span className="rg-mark__trade">{b.trade}</span>
             </Link>
             <nav className="rg-head__actions" aria-label={w.menuLabel}>
-              <a className="rg-btn rg-btn--line" href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
-              <a className="rg-btn rg-btn--solid" href={tel}><PhoneIcon /> <span className="rg-btn__text">{b.phone}</span></a>
+              <a className="rg-btn rg-btn--line" href={`/#${ESTIMATE_ID}`}>
+                {w.estimateShort}
+              </a>
+              <a className="rg-btn rg-btn--solid" href={tel}>
+                <PhoneIcon /> <span className="rg-btn__text">{b.phone}</span>
+              </a>
             </nav>
           </div>
         </header>
@@ -68,12 +82,23 @@ export function RidgeShell({
 
         <footer className="rg-foot">
           <div className="rg-wrap">
-            <p className="rg-foot__big" aria-hidden="true">{b.name}</p>
+            <p className="rg-foot__big" aria-hidden="true">
+              {b.name}
+            </p>
             <div className="rg-foot__row">
-              <span>{w.footer.copyright} {year} {b.name}{w.separator}{w.footer.rights}</span>
-              <span>{w.serving} {b.serviceArea.join(w.separator)}</span>
+              <span>
+                {w.footer.copyright} {year} {b.name}
+                {w.separator}
+                {w.footer.rights}
+              </span>
+              <span>
+                {w.serving} {b.serviceArea.join(w.separator)}
+              </span>
               <a href={tel}>{b.phone}</a>
               <a href="/privacy">{w.footer.privacy}</a>
+              <a href="/report" rel="nofollow">
+                {w.footer.report}
+              </a>
               {platformCredit && (
                 <a href={PLATFORM_URL}>
                   {year} {w.footer.creditPrefix} {w.footer.creditBrand}
@@ -84,7 +109,9 @@ export function RidgeShell({
         </footer>
 
         <div className="rg-thumb">
-          <a href={tel}><PhoneIcon /> {w.call}</a>
+          <a href={tel}>
+            <PhoneIcon /> {w.call}
+          </a>
           <a href={`/#${ESTIMATE_ID}`}>{w.estimateShort}</a>
         </div>
       </div>
@@ -93,7 +120,17 @@ export function RidgeShell({
 }
 
 /** A plain content page (privacy, terms) in the ridge chrome. */
-export function RidgeContentPage({ content, palette, words, html }: { content: ContractorContent; palette: DerivedPalette; words: ContractorWords; html: string }): ReactElement {
+export function RidgeContentPage({
+  content,
+  palette,
+  words,
+  html,
+}: {
+  content: ContractorContent;
+  palette: DerivedPalette;
+  words: ContractorWords;
+  html: string;
+}): ReactElement {
   return (
     <RidgeShell content={content} palette={palette} words={words}>
       <main className="rg-section rg-light">
@@ -126,15 +163,27 @@ export function RidgeLanding({
           <div className="rg-wrap rg-hero__grid">
             <div>
               <p className="rg-hero__kicker rg-rise">{c.hero.kicker}</p>
-              <p className="rg-hero__marker rg-rise"><span className="rg-brush">{c.hero.marker}</span></p>
-              <h1 className="rg-hero__headline rg-rise"><Headline text={c.hero.headline} highlight={c.hero.highlight} /></h1>
+              <p className="rg-hero__marker rg-rise">
+                <span className="rg-brush">{c.hero.marker}</span>
+              </p>
+              <h1 className="rg-hero__headline rg-rise">
+                <Headline text={c.hero.headline} highlight={c.hero.highlight} />
+              </h1>
               <p className="rg-hero__sub rg-rise">{c.hero.sub}</p>
               <div className="rg-hero__ctas rg-rise">
-                <a className="rg-btn rg-btn--solid rg-btn--big" href={`#${ESTIMATE_ID}`}>{c.hero.estimateLabel} <ArrowIcon /></a>
-                <a className="rg-btn rg-btn--line rg-btn--big" href={tel}><PhoneIcon /> {b.phone}</a>
+                <a className="rg-btn rg-btn--solid rg-btn--big" href={`#${ESTIMATE_ID}`}>
+                  {c.hero.estimateLabel} <ArrowIcon />
+                </a>
+                <a className="rg-btn rg-btn--line rg-btn--big" href={tel}>
+                  <PhoneIcon /> {b.phone}
+                </a>
               </div>
             </div>
-            <div className="rg-gable"><div className="rg-gable__media"><Media media={c.hero.media} eager /></div></div>
+            <div className="rg-gable">
+              <div className="rg-gable__media">
+                <Media media={c.hero.media} eager />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -159,12 +208,17 @@ export function RidgeLanding({
         <section className="rg-section rg-light" aria-labelledby="rg-services-title">
           <div className="rg-wrap rg-side">
             <div className="rg-side__head">
-              <h2 className="rg-title" id="rg-services-title">{c.services.title}</h2>
+              <h2 className="rg-title" id="rg-services-title">
+                {c.services.title}
+              </h2>
               {c.services.note !== undefined && <p className="rg-lede">{c.services.note}</p>}
             </div>
             <ul className="rg-cards rg-cards--two">
               {c.services.items.map((s) => (
-                <li key={s.name} className={s.photo !== undefined ? 'rg-card' : 'rg-card rg-card--plain'}>
+                <li
+                  key={s.name}
+                  className={s.photo !== undefined ? 'rg-card' : 'rg-card rg-card--plain'}
+                >
                   {s.photo !== undefined && (
                     <div className="rg-card__photo">
                       <Media media={s.photo} />
@@ -177,7 +231,13 @@ export function RidgeLanding({
                       {s.icon !== undefined && <Icon name={s.icon} />}
                     </div>
                     <p className="rg-card__text">{s.detail}</p>
-                    {s.tags !== undefined && <ul className="rg-tags">{s.tags.map((t) => <li key={t}>{t}</li>)}</ul>}
+                    {s.tags !== undefined && (
+                      <ul className="rg-tags">
+                        {s.tags.map((t) => (
+                          <li key={t}>{t}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </li>
               ))}
@@ -190,20 +250,33 @@ export function RidgeLanding({
           <div className="rg-wrap">
             <ul className="rg-projects rg-projects--lead">
               {c.work.items.map((item, i) => (
-                <li key={item.media.url} className={i === 0 ? 'rg-project rg-project--lead' : 'rg-project'}>
+                <li
+                  key={item.media.url}
+                  className={i === 0 ? 'rg-project rg-project--lead' : 'rg-project'}
+                >
                   <div className="rg-project__photo">
                     <Media media={item.media} />
-                    {item.tag !== undefined && <span className="rg-card__label rg-card__label--accent">{item.tag}</span>}
+                    {item.tag !== undefined && (
+                      <span className="rg-card__label rg-card__label--accent">{item.tag}</span>
+                    )}
                     {i === 0 && (
                       <div className="rg-project__over">
-                        <h2 className="rg-title" id="rg-work-title">{c.work.title}</h2>
-                        {c.work.intro !== undefined && <p className="rg-project__intro">{c.work.intro}</p>}
+                        <h2 className="rg-title" id="rg-work-title">
+                          {c.work.title}
+                        </h2>
+                        {c.work.intro !== undefined && (
+                          <p className="rg-project__intro">{c.work.intro}</p>
+                        )}
                       </div>
                     )}
                   </div>
                   <p className="rg-project__cap">
                     <span className="rg-project__title">{item.caption}</span>
-                    {item.place !== undefined && <span className="rg-project__place"><Icon name="location_on" /> {item.place}</span>}
+                    {item.place !== undefined && (
+                      <span className="rg-project__place">
+                        <Icon name="location_on" /> {item.place}
+                      </span>
+                    )}
                   </p>
                 </li>
               ))}
@@ -215,10 +288,16 @@ export function RidgeLanding({
         {reviews !== undefined && reviews.items[0] !== undefined && (
           <section className="rg-section rg-light" aria-labelledby="rg-reviews-title">
             <div className="rg-wrap">
-              <h2 className="rg-sr" id="rg-reviews-title">{reviews.title}</h2>
+              <h2 className="rg-sr" id="rg-reviews-title">
+                {reviews.title}
+              </h2>
               <figure className="rg-lead-quote">
-                <span className="rg-stars" role="img" aria-label={w.starsLabel}>{'star '.repeat(5).trim()}</span>
-                <blockquote className="rg-lead-quote__text">{fill(w.quoted, { quote: reviews.items[0].quote })}</blockquote>
+                <span className="rg-stars" role="img" aria-label={w.starsLabel}>
+                  {'star '.repeat(5).trim()}
+                </span>
+                <blockquote className="rg-lead-quote__text">
+                  {fill(w.quoted, { quote: reviews.items[0].quote })}
+                </blockquote>
                 <figcaption className="rg-review__who">
                   <strong>{reviews.items[0].author}</strong>
                   {reviews.items[0].job !== undefined && <span>{reviews.items[0].job}</span>}
@@ -228,9 +307,16 @@ export function RidgeLanding({
                 <ul className="rg-reviews">
                   {reviews.items.slice(1).map((r) => (
                     <li key={r.quote} className="rg-card rg-review">
-                      <span className="rg-stars" role="img" aria-label={w.starsLabel}>{'star '.repeat(5).trim()}</span>
-                      <blockquote className="rg-review__quote">{fill(w.quoted, { quote: r.quote })}</blockquote>
-                      <p className="rg-review__who"><strong>{r.author}</strong>{r.job !== undefined && <span>{r.job}</span>}</p>
+                      <span className="rg-stars" role="img" aria-label={w.starsLabel}>
+                        {'star '.repeat(5).trim()}
+                      </span>
+                      <blockquote className="rg-review__quote">
+                        {fill(w.quoted, { quote: r.quote })}
+                      </blockquote>
+                      <p className="rg-review__who">
+                        <strong>{r.author}</strong>
+                        {r.job !== undefined && <span>{r.job}</span>}
+                      </p>
                     </li>
                   ))}
                 </ul>
@@ -243,34 +329,64 @@ export function RidgeLanding({
         {/* ── Cut-Pro's crew quote, on dark ── */}
         <section className="rg-section rg-crew" aria-labelledby="rg-crew-title">
           <div className="rg-wrap rg-crew__grid">
-            <div className="rg-crew__photo"><Media media={c.crew.photo} /></div>
+            <div className="rg-crew__photo">
+              <Media media={c.crew.photo} />
+            </div>
             <div>
-              <h2 className="rg-sr" id="rg-crew-title">{c.crew.eyebrow}</h2>
+              <h2 className="rg-sr" id="rg-crew-title">
+                {c.crew.eyebrow}
+              </h2>
               <blockquote className="rg-crew__quote">{c.crew.quote}</blockquote>
               <p className="rg-crew__who">{c.crew.attribution}</p>
-              {c.crew.body.map((p) => <p className="rg-crew__body" key={p.slice(0, 32)}>{p}</p>)}
+              {c.crew.body.map((p) => (
+                <p className="rg-crew__body" key={p.slice(0, 32)}>
+                  {p}
+                </p>
+              ))}
             </div>
           </div>
         </section>
 
         {/* ── the estimate: a giant faded word behind the form and its title ── */}
-        <section className="rg-section rg-light rg-ghosted" id={ESTIMATE_ID} aria-labelledby="rg-estimate-title">
-          <p className="rg-ghost" aria-hidden="true">{c.estimate.eyebrow}</p>
+        <section
+          className="rg-section rg-light rg-ghosted"
+          id={ESTIMATE_ID}
+          aria-labelledby="rg-estimate-title"
+        >
+          <p className="rg-ghost" aria-hidden="true">
+            {c.estimate.eyebrow}
+          </p>
           <div className="rg-wrap rg-close">
             <div>
-              <h2 className="rg-title" id="rg-estimate-title">{c.estimate.title}</h2>
+              <h2 className="rg-title" id="rg-estimate-title">
+                {c.estimate.title}
+              </h2>
               <p className="rg-lede">{c.estimate.intro}</p>
               {c.estimate.steps !== undefined && (
-                <ul className="rg-steps">{c.estimate.steps.map((s) => <li key={s}><Icon name="check_circle" /> {s}</li>)}</ul>
+                <ul className="rg-steps">
+                  {c.estimate.steps.map((s) => (
+                    <li key={s}>
+                      <Icon name="check_circle" /> {s}
+                    </li>
+                  ))}
+                </ul>
               )}
               <div className="rg-areacard">
-                <p className="rg-areacard__title"><Icon name="location_on" /> {c.area.title}</p>
+                <p className="rg-areacard__title">
+                  <Icon name="location_on" /> {c.area.title}
+                </p>
                 <p className="rg-card__text">{c.area.intro}</p>
               </div>
             </div>
             {tenantId !== undefined && (
               <div className="rg-formcard">
-                <EstimateForm tenantId={tenantId} services={c.services.items.map((s) => s.name)} states={c.estimate.states ?? b.serviceArea} detailsHint={c.estimate.detailsHint} words={w.form} />
+                <EstimateForm
+                  tenantId={tenantId}
+                  services={c.services.items.map((s) => s.name)}
+                  states={c.estimate.states ?? b.serviceArea}
+                  detailsHint={c.estimate.detailsHint}
+                  words={w.form}
+                />
               </div>
             )}
           </div>

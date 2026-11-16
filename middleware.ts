@@ -1,3 +1,4 @@
+import { reportPageUrl } from '@/lib/site-reports/report';
 import { createServerClient } from '@supabase/ssr';
 import type { SetAllCookies } from '@supabase/ssr';
 import type { NextRequest } from 'next/server';
@@ -50,6 +51,9 @@ export const config = {
 // proxy.ts always runs on Node, and the Cloudflare adapter only supports Node
 // middleware experimentally. Edge middleware is its supported path. Next prints
 // a deprecation warning for this file — expected until the adapter catches up.
+/** Every site's footer link to report it. */
+const REPORT_PATH = '/report';
+
 export async function middleware(request: NextRequest) {
   // Every shop subdomain reaches this Worker directly, so the real Host header
   // says which shop. The old forwarded-shop header is ignored (see requestHost).
@@ -110,6 +114,14 @@ export async function middleware(request: NextRequest) {
     const tenant = await resolveTenant(subdomain);
     if (!tenant) {
       return new NextResponse('Store not found', { status: 404 });
+    }
+    // "Report this site" in every footer (go-live step 3): bohdiai.com's report page,
+    // the site filled in. Works whatever state the site is in.
+    if (request.nextUrl.pathname === REPORT_PATH) {
+      return NextResponse.redirect(
+        reportPageUrl(request.headers.get('host') ?? hostname, request.nextUrl.protocol, subdomain),
+        303,
+      );
     }
     // A draft site is "not found" to everyone but its private preview link; an
     // offline one shows everyone else that it's temporarily offline (Session 119).
