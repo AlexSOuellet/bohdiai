@@ -6,13 +6,18 @@ import { shortDate } from './format';
 const FREE_NAMES: Record<string, string> = { free: 'Free site', showcase: 'Free Showcase' };
 
 function paying(site: FounderSite): string {
-  if (site.paying !== null) return `${dollars(site.paying.cents)} a ${site.paying.interval}${site.discount === null ? '' : ` (${site.discount})`}`;
+  if (site.paying !== null)
+    return `${dollars(site.paying.cents)} a ${site.paying.interval}${site.discount === null ? '' : ` (${site.discount})`}`;
   return site.planComp === null ? 'Nothing' : (FREE_NAMES[site.planComp] ?? site.planComp);
 }
 
 /** Every site, newest first, with the way into each: the site itself (a private
  *  link when it isn't live) and its backend. */
-export function SiteTable({ sites }: { sites: readonly (FounderSite & { openUrl: string })[] }): React.ReactElement {
+export function SiteTable({
+  sites,
+}: {
+  sites: readonly (FounderSite & { openUrl: string })[];
+}): React.ReactElement {
   return (
     <div className="bk-table-wrap">
       <table className="bk-table">
@@ -47,26 +52,53 @@ export function SiteTable({ sites }: { sites: readonly (FounderSite & { openUrl:
               <td>{paying(site)}</td>
               <td>{shortDate(site.joined)}</td>
               <td>
-                {site.planComp === null ? (
-                  <span className="fd-deals">
-                    <Link href={`/founder/act/${site.id}#free` as Route} className="bk-link" aria-label={`Make ${site.name} free`}>
-                      Make free
+                <span className="fd-deals">
+                  {site.planComp === null ? (
+                    <>
+                      <Link
+                        href={`/founder/act/${site.id}#free` as Route}
+                        className="bk-link"
+                        aria-label={`Make ${site.name} free`}
+                      >
+                        Make free
+                      </Link>
+                      <Link
+                        href={`/founder/act/${site.id}#discount` as Route}
+                        className="bk-link"
+                        aria-label={`Give ${site.name} a discount`}
+                      >
+                        Give discount
+                      </Link>
+                    </>
+                  ) : (
+                    <Link
+                      href={`/founder/act/${site.id}#free` as Route}
+                      className="bk-link"
+                      aria-label={`Change ${site.name}’s free site`}
+                    >
+                      Change
                     </Link>
-                    <Link href={`/founder/act/${site.id}#discount` as Route} className="bk-link" aria-label={`Give ${site.name} a discount`}>
-                      Give discount
+                  )}
+                  {site.status !== 'closed' && (
+                    <Link
+                      href={`/founder/act/${site.id}#suspend` as Route}
+                      className="bk-link"
+                      aria-label={`${site.status === 'suspended' ? 'Unsuspend' : 'Suspend'} ${site.name}`}
+                    >
+                      {site.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
                     </Link>
-                  </span>
-                ) : (
-                  <Link href={`/founder/act/${site.id}#free` as Route} className="bk-link" aria-label={`Change ${site.name}’s free site`}>
-                    Change
-                  </Link>
-                )}
+                  )}
+                </span>
               </td>
               <td>
                 {site.canManage ? (
                   <form action="/manage/switch-site" method="post">
                     <input type="hidden" name="tenantId" value={site.id} />
-                    <button type="submit" className="fd-out" aria-label={`Open the backend of ${site.name}`}>
+                    <button
+                      type="submit"
+                      className="fd-out"
+                      aria-label={`Open the backend of ${site.name}`}
+                    >
                       Open
                     </button>
                   </form>

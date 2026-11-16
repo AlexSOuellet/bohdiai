@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const state: { updateError: { code?: string; message: string } | null; updated: { id: string }[]; nowStatus: string | null } = { updateError: null, updated: [{ id: 't1' }], nowStatus: 'active' };
+const state: {
+  updateError: { code?: string; message: string } | null;
+  updated: { id: string }[];
+  nowStatus: string | null;
+} = { updateError: null, updated: [{ id: 't1' }], nowStatus: 'active' };
 const calls: { update: unknown[]; eqs: [string, string][] } = { update: [], eqs: [] };
 const revalidatePath = vi.fn();
 const logError = vi.fn();
 
 vi.mock('next/cache', () => ({ revalidatePath: (...a: unknown[]) => revalidatePath(...a) }));
-vi.mock('@/lib/backend/current-site', () => ({ requireActingSite: () => Promise.resolve({ site: { tenantId: 't1', subdomain: 'tide' } }) }));
+vi.mock('@/lib/backend/current-site', () => ({
+  requireActingSite: () => Promise.resolve({ site: { tenantId: 't1', subdomain: 'tide' } }),
+}));
 vi.mock('@/lib/logger', () => ({ logger: { error: (...a: unknown[]) => logError(...a) } }));
 vi.mock('@/lib/supabase-server', () => ({
   createSupabaseServerClient: () =>
@@ -19,11 +25,22 @@ vi.mock('@/lib/supabase-server', () => ({
               calls.eqs.push([col, val]);
               return chain;
             },
-            select: () => Promise.resolve({ data: state.updateError === null ? state.updated : null, error: state.updateError }),
+            select: () =>
+              Promise.resolve({
+                data: state.updateError === null ? state.updated : null,
+                error: state.updateError,
+              }),
           };
           return chain;
         },
-        select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: state.nowStatus === null ? null : { status: state.nowStatus } }) }) }),
+        select: () => ({
+          eq: () => ({
+            maybeSingle: () =>
+              Promise.resolve({
+                data: state.nowStatus === null ? null : { status: state.nowStatus },
+              }),
+          }),
+        }),
       }),
     }),
 }));
@@ -59,14 +76,23 @@ describe('publishSite', () => {
   it('nothing changed and not live is a failure, not a silent yes', async () => {
     state.updated = [];
     state.nowStatus = null;
-    expect(await publishSite()).toEqual({ ok: false, error: 'Your site couldn’t be published. Try again in a moment.' });
+    expect(await publishSite()).toEqual({
+      ok: false,
+      error: 'Your site couldn’t be published. Try again in a moment.',
+    });
   });
 
   it('no access and a failed write each say so', async () => {
     state.updateError = { code: '42501', message: 'denied' };
-    expect(await publishSite()).toEqual({ ok: false, error: 'You don’t have access to publish this site.' });
+    expect(await publishSite()).toEqual({
+      ok: false,
+      error: 'You don’t have access to publish this site.',
+    });
     state.updateError = { message: 'down' };
-    expect(await publishSite()).toEqual({ ok: false, error: 'Your site couldn’t be published. Try again in a moment.' });
+    expect(await publishSite()).toEqual({
+      ok: false,
+      error: 'Your site couldn’t be published. Try again in a moment.',
+    });
     expect(logError).toHaveBeenCalledTimes(1);
     expect(revalidatePath).not.toHaveBeenCalled();
   });
@@ -105,7 +131,26 @@ describe('taking a site offline and back (Session 119)', () => {
   it('says so when nothing moved and the site isn’t where it should be', async () => {
     state.updated = [];
     state.nowStatus = 'draft';
-    expect(await takeSiteOffline()).toEqual({ ok: false, error: 'Your site couldn’t be taken offline. Try again in a moment.' });
-    expect(await putSiteOnline()).toEqual({ ok: false, error: 'Your site couldn’t be put back online. Try again in a moment.' });
+    expect(await takeSiteOffline()).toEqual({
+      ok: false,
+      error: 'Your site couldn’t be taken offline. Try again in a moment.',
+    });
+    expect(await putSiteOnline()).toEqual({
+      ok: false,
+      error: 'Your site couldn’t be put back online. Try again in a moment.',
+    });
+  });
+});
+
+describe('a suspended site (go-live step 3, Alex 2026-11-16)', () => {
+  it('can’t be published, taken offline or put back by its maker, and says why', async () => {
+    state.updateError = null;
+    state.updated = [];
+    state.nowStatus = 'suspended';
+    for (const act of [publishSite, takeSiteOffline, putSiteOnline]) {
+      const r = await act();
+      expect(r.ok).toBe(false);
+      expect(!r.ok && r.error).toMatch(/Your site is suspended/);
+    }
   });
 });

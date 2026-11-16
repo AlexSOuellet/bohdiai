@@ -223,7 +223,13 @@ describe('recordSubscription at the end of a term', () => {
       op: 'update',
       value: { status: 'offline', plan_cancels: false },
     });
-    expect(calls).toHaveLength(2);
+    // A site suspended when its term ends will come back offline, not live.
+    expect(calls[2]).toMatchObject({
+      table: 'tenants',
+      op: 'update',
+      value: { suspended_from: 'offline' },
+    });
+    expect(calls).toHaveLength(3);
   });
   it('a closing account’s term ending removes everything, and only then (Alex, 2026-11-16)', async () => {
     const { db, calls } = fakeDb();

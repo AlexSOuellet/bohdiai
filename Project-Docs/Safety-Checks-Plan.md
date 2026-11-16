@@ -59,7 +59,9 @@ Drafted 2026-11-16 for Alex's yes. Nothing is built until he says go. Four piece
 
 **Already in place:** the database already allows a "suspended" state for a site; it's just never used.
 
-**Alex's call:** while a site is suspended, does Stripe keep billing the plan, or is billing paused?
+**Decided (Alex, 2026-11-16):** billing pauses while suspended ("i go with pause. no refunds in middle of month though"): Stripe skips the bills that come due and refunds nothing already paid. **Done 2026-11-16:** built and tried by Alex (suspended test-site-3 and unsuspended it); merged. A Suspend link sits on every row of Act as a maker.
+
+**Found while building (fixed, Alex's yes):** a signed-in maker could change any part of their own site record straight through the database (make it free, give it Full, take another address). The record is now locked: the maker's login changes only the customer-accounts switch, the contact email and Publish / offline / back online, and those moves only draft→live, live↔offline, never while on Free or suspended (`20261116000002_lock_tenant_record_and_suspend.sql`).
 
 ---
 

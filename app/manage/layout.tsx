@@ -12,14 +12,27 @@ import { Shell } from './_components/Shell';
 import { backendFace } from './fonts';
 import './backend.css';
 
+const SUSPENDED_BANNER =
+  'Your site has been suspended, so visitors see that it’s offline. Check your email for why, and use Contact support to talk to Alex about it.';
+
 export const metadata: Metadata = { title: 'Backend', robots: { index: false, follow: false } };
 
-export default async function ManageLayout({ children }: { children: React.ReactNode }): Promise<React.ReactElement> {
+export default async function ManageLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}): Promise<React.ReactElement> {
   const { user, site, sites } = await requireActingSite();
   // Onboarding first (Session 119): a paid site that hasn't sent its form goes there.
   if (await needsOnboarding(supabaseAdmin(), site.tenantId)) redirect(ONBOARDING_PATH);
   const on = await getSiteFeatures(site.tenantId);
-  const open = await getSiteOpen(supabaseAdmin(), site.tenantId, site.subdomain, process.env['BACKEND_SESSION_SECRET'], (await headers()).get('host'));
+  const open = await getSiteOpen(
+    supabaseAdmin(),
+    site.tenantId,
+    site.subdomain,
+    process.env['BACKEND_SESSION_SECRET'],
+    (await headers()).get('host'),
+  );
   return (
     <div className={`bk ${backendFace.variable}`}>
       <Shell
@@ -30,6 +43,7 @@ export default async function ManageLayout({ children }: { children: React.React
         sites={sites}
         currentTenantId={site.tenantId}
         founder={isFounder(user.id)}
+        banner={open.suspended ? SUSPENDED_BANNER : null}
       >
         {children}
       </Shell>

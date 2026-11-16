@@ -19,6 +19,9 @@ export type PlanChange =
   | { kind: 'downgrade'; to: string; on: string }
   | { kind: 'downgrade-dropped'; stays: string }
   | { kind: 'renewed'; plan: string }
+  /** Alex suspended the site (go-live step 3); `reason` is his own words. */
+  | { kind: 'suspended'; reason: string }
+  | { kind: 'unsuspended' }
   /** Monthly or yearly on the same plan; `on` is the renewal day it starts, or null for now. */
   | { kind: 'billing'; billing: 'monthly' | 'yearly'; on: string | null };
 
@@ -102,6 +105,18 @@ function planWords(
             text: `${siteName} will be billed ${how} from ${change.on}, when your current term ends. Until then nothing changes.`,
           };
     }
+    case 'suspended':
+      return {
+        subject: `${siteName}: your site has been suspended`,
+        heading: 'Your site has been suspended',
+        text: `${siteName} has been suspended, so visitors see that it’s offline for now, and you can’t put it back online yourself. This is why:\n\n${change.reason}\n\nYour plan’s billing is paused while it’s suspended, so nothing more is charged until it’s sorted out. Nothing on your site has been deleted. To talk about it, email Alex at ${SITE_CONTACT_EMAIL}.`,
+      };
+    case 'unsuspended':
+      return {
+        subject: `${siteName}: your site is back`,
+        heading: 'Your site is back',
+        text: `${siteName} is no longer suspended. It’s back exactly as it was before, and your plan’s billing carries on from today.`,
+      };
     case 'renewed':
       return {
         subject: `${siteName}: renewed on ${change.plan}`,

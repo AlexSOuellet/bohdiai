@@ -85,3 +85,27 @@ describe('sendPlanChange', () => {
     expect(threw).toBe(false);
   });
 });
+
+describe('suspend emails (go-live step 3, Alex 2026-11-16)', () => {
+  it('tells the maker why, that billing is paused and nothing is deleted, and how to reach Alex', () => {
+    const mail = planChangeEmail('Saltmarsh', {
+      kind: 'suspended',
+      reason: 'Your shop lists vapes.',
+    });
+    expect(mail.subject).toBe('Saltmarsh: your site has been suspended');
+    expect(mail.text.split('\n\n')).toContain('Your shop lists vapes.');
+    expect(mail.text).toMatch(/billing is paused/);
+    expect(mail.text).toMatch(/Nothing on your site has been deleted/);
+    expect(mail.html).toContain('Your shop lists vapes.');
+  });
+  it('says the site is back as it was', () => {
+    expect(planChangeEmail('Saltmarsh', { kind: 'unsuspended' }).text).toMatch(
+      /back exactly as it was/,
+    );
+  });
+  it('escapes what Alex typed in the email’s design', () => {
+    expect(
+      planChangeEmail('Saltmarsh', { kind: 'suspended', reason: '<b>x</b>' }).html,
+    ).not.toContain('<b>x</b>');
+  });
+});

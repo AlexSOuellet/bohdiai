@@ -17,8 +17,13 @@ export const dynamic = 'force-dynamic';
 async function tenantId(): Promise<string> {
   const id = (await headers()).get('x-tenant-id');
   if (id === null) notFound();
-  const { data } = await supabaseAdmin().from('tenants').select('status').eq('id', id).maybeSingle();
-  if (data?.status !== 'offline') notFound();
+  const { data } = await supabaseAdmin()
+    .from('tenants')
+    .select('status')
+    .eq('id', id)
+    .maybeSingle();
+  // Suspended by Alex (go-live step 3) shows the same page.
+  if (data?.status !== 'offline' && data?.status !== 'suspended') notFound();
   return id;
 }
 
@@ -30,7 +35,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OfflinePage(): Promise<React.ReactElement> {
   const id = await tenantId();
   const words = await loadShopWords(id);
-  const page = await renderArchetypeContentPage(id, { title: words.offline.title, body: [words.offline.body] });
+  const page = await renderArchetypeContentPage(id, {
+    title: words.offline.title,
+    body: [words.offline.body],
+  });
   if (page !== null) return page;
   // A design without a content page still says so, plainly.
   return (

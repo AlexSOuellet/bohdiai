@@ -25,6 +25,10 @@ const h = vi.hoisted(() => ({
 vi.mock('next/headers', () => ({
   headers: async () => new Headers({ host: 'app.bohdiai.com', 'x-forwarded-proto': 'https' }),
 }));
+vi.mock('@/lib/founder/suspend', async (orig) => ({
+  ...(await orig<object>()),
+  siteSuspended: () => Promise.resolve(false),
+}));
 vi.mock('next/navigation', () => ({ redirect: h.redirect }));
 vi.mock('@/lib/backend/current-site', () => ({
   requireActingSite: async () => ({

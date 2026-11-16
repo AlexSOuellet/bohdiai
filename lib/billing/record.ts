@@ -164,6 +164,7 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
       .eq('id', tenantId)
       .eq('status', 'active');
     if (downErr !== null) throw new Error(`Could not close the site: ${downErr.message}`);
+    await downWhileSuspended(db, tenantId);
     return;
   }
   if (now === null || tenantId === undefined) return;
@@ -173,6 +174,18 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
     .update({ plan_renews_on: day(now.end) })
     .eq('id', tenantId);
   if (tErr !== null) throw new Error(`Could not save the renewal day: ${tErr.message}`);
+}
+
+/** A suspended site whose term ends comes back offline, not live, if Alex unsuspends it. */
+async function downWhileSuspended(db: Db, tenantId: string): Promise<void> {
+  const { error } = await db
+    .from('tenants')
+    .update({ suspended_from: 'offline' })
+    .eq('id', tenantId)
+    .eq('status', 'suspended')
+    .eq('suspended_from', 'active');
+  if (error !== null)
+    throw new Error(`Could not note the suspended site is down: ${error.message}`);
 }
 
 /**
@@ -213,6 +226,7 @@ async function followPlan(
         .eq('id', tenantId)
         .eq('status', 'active');
       if (downErr !== null) throw new Error(`Could not take the site down: ${downErr.message}`);
+      await downWhileSuspended(db, tenantId);
     }
   }
   const { error: tErr } = await db

@@ -4,13 +4,16 @@ import { requireFounder } from '@/lib/founder/access';
 import { endFree, giveDiscount, makeFree, removeDiscount } from '@/lib/founder/promo-actions';
 import { dollars, loadFounderSites, planName } from '@/lib/founder/sites';
 import { supabaseAdmin } from '@/lib/supabase';
+import { suspendFromAdmin, unsuspendFromAdmin } from '@/lib/founder/suspend-actions';
 import { ActionForm } from '../../ActionForm';
 import { DiscountFields } from '../../DiscountFields';
 
 export const dynamic = 'force-dynamic';
 
 /** One maker's money: what they pay, and the discount or free site Alex can give them. */
-export default async function FounderMakerPage({ params }: PageProps<'/founder/act/[id]'>): Promise<React.ReactElement> {
+export default async function FounderMakerPage({
+  params,
+}: PageProps<'/founder/act/[id]'>): Promise<React.ReactElement> {
   await requireFounder();
   const { id } = await params;
   const site = (await loadFounderSites(supabaseAdmin())).find((s) => s.id === id);
@@ -30,12 +33,22 @@ export default async function FounderMakerPage({ params }: PageProps<'/founder/a
         <section className="bk-section">
           <h2 className="bk-section-title">What they pay</h2>
           <p>
-            {planName(site.plan)}: {site.paying === null ? 'nothing right now' : `${dollars(site.paying.cents)} a ${site.paying.interval}`}
+            {planName(site.plan)}:{' '}
+            {site.paying === null
+              ? 'nothing right now'
+              : `${dollars(site.paying.cents)} a ${site.paying.interval}`}
           </p>
           {site.discount !== null && (
             <>
               <p className="bk-note">Running now: {site.discount}</p>
-              {!free && <ActionForm action={removeDiscount} button="Remove discount" tenantId={site.id} quiet />}
+              {!free && (
+                <ActionForm
+                  action={removeDiscount}
+                  button="Remove discount"
+                  tenantId={site.id}
+                  quiet
+                />
+              )}
             </>
           )}
         </section>
@@ -43,7 +56,10 @@ export default async function FounderMakerPage({ params }: PageProps<'/founder/a
         {!free && (
           <section id="discount" className="bk-section">
             <h2 className="bk-section-title">Give a discount</h2>
-            <p className="bk-note">This replaces any discount running. On a yearly plan, months become credit toward their next renewal.</p>
+            <p className="bk-note">
+              This replaces any discount running. On a yearly plan, months become credit toward
+              their next renewal.
+            </p>
             <ActionForm action={giveDiscount} button="Give discount" tenantId={site.id}>
               <DiscountFields />
             </ActionForm>
@@ -63,6 +79,47 @@ export default async function FounderMakerPage({ params }: PageProps<'/founder/a
                 <input id="fd-note" name="note" maxLength={500} className="bk-input" />
               </div>
             </ActionForm>
+          )}
+        </section>
+
+        <section id="suspend" className="bk-section">
+          <h2 className="bk-section-title">
+            {site.status === 'suspended' ? 'Suspended' : 'Suspend this site'}
+          </h2>
+          {site.status === 'suspended' ? (
+            <>
+              <p className="bk-note">Why: {site.suspendedReason ?? 'no reason saved'}</p>
+              <p className="bk-note">
+                Visitors see it’s offline, the maker can’t put it back, and billing is paused.
+                Unsuspend puts it back exactly as it was and billing carries on.
+              </p>
+              <ActionForm action={unsuspendFromAdmin} button="Unsuspend" tenantId={site.id} />
+            </>
+          ) : site.status === 'closed' ? (
+            <p className="bk-note">This site is closed.</p>
+          ) : (
+            <>
+              <p className="bk-note">
+                For when the whole site is the problem. Visitors see it’s offline straight away, the
+                maker can’t put it back, and billing pauses (nothing already paid is refunded). The
+                maker gets an email with your reason.
+              </p>
+              <ActionForm action={suspendFromAdmin} button="Suspend this site" tenantId={site.id}>
+                <div className="bk-field">
+                  <label htmlFor="sus-reason" className="bk-label">
+                    Why (the maker sees this)
+                  </label>
+                  <textarea
+                    id="sus-reason"
+                    name="reason"
+                    maxLength={1000}
+                    rows={3}
+                    className="bk-input"
+                    required
+                  />
+                </div>
+              </ActionForm>
+            </>
           )}
         </section>
       </main>
