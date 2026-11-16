@@ -7,7 +7,12 @@ export function DiscountFields({ freeSite = false }: { freeSite?: boolean }): Re
         <label htmlFor="fd-kind" className="bk-label">
           {freeSite ? 'What you’re offering' : 'Kind'}
         </label>
-        <select id="fd-kind" name="kind" className="bk-input" defaultValue={freeSite ? 'site' : 'percent'}>
+        <select
+          id="fd-kind"
+          name="kind"
+          className="bk-input"
+          defaultValue={freeSite ? 'site' : 'percent'}
+        >
           {freeSite && <option value="site">Free site, no payment</option>}
           <option value="free">Months free</option>
           <option value="percent">Percent off</option>

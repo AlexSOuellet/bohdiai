@@ -90,7 +90,9 @@ export default async function FounderPromotionsPage(): Promise<React.ReactElemen
                 Total uses
               </label>
               <input id="fd-uses" name="maxUses" inputMode="numeric" className="bk-input" />
-              <p className="bk-note">Leave blank for no limit. Each maker can only ever use a code once.</p>
+              <p className="bk-note">
+                Leave blank for no limit. Each maker can only ever use a code once.
+              </p>
             </div>
           </ActionForm>
         </section>

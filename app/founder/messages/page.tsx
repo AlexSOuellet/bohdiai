@@ -1,6 +1,7 @@
 import { requireFounder } from '@/lib/founder/access';
 import { loadFounderMessages } from '@/lib/founder/messages';
 import { supabaseAdmin } from '@/lib/supabase';
+import { markSeenQuietly } from '@/lib/founder/seen-page';
 import { MessageList } from './MessageList';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +9,7 @@ export const dynamic = 'force-dynamic';
 /** Messages: what makers sent through Contact support. */
 export default async function FounderMessagesPage(): Promise<React.ReactElement> {
   await requireFounder();
+  await markSeenQuietly('messages');
   return (
     <>
       <div className="bk-head">

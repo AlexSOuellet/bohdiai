@@ -13,7 +13,13 @@ type Props = {
 };
 
 /** An admin form that says what happened, whichever way it went. */
-export function ActionForm({ action, button, tenantId, quiet = false, children }: Props): React.ReactElement {
+export function ActionForm({
+  action,
+  button,
+  tenantId,
+  quiet = false,
+  children,
+}: Props): React.ReactElement {
   const [result, run, busy] = useActionState(action, null);
   return (
     <form action={run} className="fd-form">

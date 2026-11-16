@@ -4,7 +4,12 @@ import { shortDate } from '../format';
 
 /** Feedback from the try-the-tools page: how many want each idea, then every response. */
 export function FeedbackList({ view }: { view: FeedbackView }): React.ReactElement {
-  if (view.total === 0) return <p className="bk-note">No feedback yet. When someone sends the form on bohdiai.com/try-the-tools, it shows here.</p>;
+  if (view.total === 0)
+    return (
+      <p className="bk-note">
+        No feedback yet. When someone sends the form on bohdiai.com/try-the-tools, it shows here.
+      </p>
+    );
   return (
     <>
       <section className="bk-section" aria-labelledby="fd-wanted">
@@ -32,7 +37,9 @@ export function FeedbackList({ view }: { view: FeedbackView }): React.ReactEleme
               <span>{shortDate(e.sent)}</span>
             </p>
             {e.message !== '' && <p className="fd-message-text">{e.message}</p>}
-            {e.wants.length > 0 && <p className="bk-note">{`Would use: ${e.wants.map(ideaName).join(', ')}`}</p>}
+            {e.wants.length > 0 && (
+              <p className="bk-note">{`Would use: ${e.wants.map(ideaName).join(', ')}`}</p>
+            )}
           </li>
         ))}
       </ul>
