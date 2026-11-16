@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { NewCounts, SeenTab } from '@/lib/founder/seen';
@@ -24,7 +24,8 @@ const TABS = [
 export function FounderTabs({ counts }: { counts: NewCounts | null }): React.ReactElement {
   const path = usePathname();
   const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set([path]));
-  useEffect(() => setOpened((o) => (o.has(path) ? o : new Set([...o, path]))), [path]);
+  // A newly opened tab joins the set while rendering (React's way to follow a changed value).
+  if (!opened.has(path)) setOpened(new Set([...opened, path]));
   return (
     <nav aria-label="Admin">
       <ul className="bk-screen-tabs">
