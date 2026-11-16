@@ -20,4 +20,8 @@ Asked whether it reverses "there is no public toolkit": Alex chose a share-only 
 
 ## Open
 - Alex to print a real PDF at Actual size and measure the ruler bar.
-- `feat/plan-changes` (Session 121) is still unmerged, untouched this session.
+- Take bohdiai.com/try-the-tools down when Alex says he has his feedback (and decide whether `tool_feedback` stays).
+- **Branches not merged, each held on purpose (checked at the close):** `feat/plan-changes` (Session 121, Go-Live step 2: built and proven in Stripe test mode; left: Alex looks at the screens, then merge), `feat/maker-checkup` ("not reviewed, not for main"), `fix/auth-link-24h` (waits for Alex). Everything from this session is on `main`.
+
+## Lasting lesson
+A tool opens with what it's for, then tabs for what the maker came to do; never one long form, never question and answer. Build for every job, not the example Alex used to explain it.

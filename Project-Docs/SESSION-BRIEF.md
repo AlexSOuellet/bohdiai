@@ -1,7 +1,7 @@
 # Session Brief — BohdiAI
 
 > **⚠ START HERE: `Go-Live-Plan.md` is the order to fully live (Session 121, 2026-11-09). Work from its first unticked step; tick each step the moment it's done and live (Alex).**
-> Session 121: read `session-logs/session-120.md`, then `Open-Work.md` items 5, 6 and 36.
+> Session 123: read `session-logs/session-122.md`. First: Alex looks at `feat/plan-changes` (Go-Live step 2, built and proven in test mode), then merge; then the next unticked Go-Live step. The try-the-tools page stays up until Alex says.
 > **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker, Promotions, Messages, Emails), promotions, the new email look, a cancel that reaches Stripe.
 > **Alex's call first: should real makers change plans themselves?** Today Upgrade emails Alex and nothing changes what Stripe charges.
 > **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** Act as a maker: search, or see every maker in a list (Alex, 2026-11-15).
@@ -34,7 +34,7 @@
 
 ## Next actions
 
-**Session 121:** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
+**Session 123:** Alex looks at `feat/plan-changes`, then merge (Go-Live step 2). **Session 122 (done):** Print it, the maker list, the try-the-tools feedback page. **Earlier (Session 121):** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
