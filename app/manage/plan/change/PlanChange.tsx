@@ -32,6 +32,8 @@ export type PlanChangeProps =
       to: Plan;
       fromBilling: Billing;
       quotes: Record<Billing, UpgradeQuote | null>;
+      /** How it's paid for: on Stripe's own page, nothing to pay (a free site), or the demo. */
+      pays: 'stripe' | 'nothing' | 'demo';
     }
   | {
       kind: 'down';
@@ -84,6 +86,7 @@ function Upgrade({
   to,
   fromBilling,
   quotes,
+  pays,
 }: Extract<PlanChangeProps, { kind: 'up' }>): React.ReactElement {
   const { busy, area, run } = useConfirm();
   const [billing, setBilling] = useState<Billing>(fromBilling);
@@ -194,13 +197,23 @@ function Upgrade({
               )
             }
           >
-            {busy ? 'Changing…' : `Confirm upgrade to ${to.name}`}
+            {busy
+              ? 'One moment…'
+              : pays === 'stripe'
+                ? 'Continue to payment'
+                : `Confirm upgrade to ${to.name}`}
           </button>
           <Link className="bk-btn bk-btn-quiet" href="/manage/plan">
             Stay on {from.name}
           </Link>
         </div>
-        <p className="bk-co-demo">Demo site: no card is charged.</p>
+        <p className="bk-co-demo">
+          {pays === 'stripe'
+            ? 'You pay on Stripe’s own page, with the card on file or a different one. BohdiAI never sees your card. Your plan changes once the payment goes through.'
+            : pays === 'demo'
+              ? 'Demo site: no card is charged.'
+              : 'Nothing to pay: your site is free.'}
+        </p>
       </section>
     </div>
   );

@@ -12,7 +12,16 @@ import { logger } from '@/lib/logger';
 import { supabaseAdmin } from '@/lib/supabase';
 import { stripe } from '@/lib/billing/stripe';
 import { currentSubscription } from '@/lib/billing/maker-subscription';
-import { applyDiscount, checkPromo, claimPromo, discountLabel, discountRunning, normalizeCode, releasePromo, type PromoRefusal } from '@/lib/billing/promos';
+import {
+  applyDiscount,
+  checkPromo,
+  claimPromo,
+  discountLabel,
+  discountRunning,
+  normalizeCode,
+  releasePromo,
+  type PromoRefusal,
+} from '@/lib/billing/promos';
 
 export type RedeemResult = { ok: true; message: string } | { ok: false; error: string };
 
@@ -21,14 +30,16 @@ const REFUSALS: Record<PromoRefusal, string> = {
   used: 'You’ve already used that code.',
   newOnly: 'That code is for new sign-ups.',
 };
-const FAILED = 'Your code couldn’t be used just now, and it hasn’t been used up. Try again in a moment.';
+const FAILED =
+  'Your code couldn’t be used just now, and it hasn’t been used up. Try again in a moment.';
 
 export async function redeemPromo(raw: unknown): Promise<RedeemResult> {
   const { user, site } = await requireActingSite();
   const code = normalizeCode(typeof raw === 'string' ? raw : '');
   if (code === '') return { ok: false, error: 'Enter your code.' };
   const allowance = await allowKey(`promo:${site.tenantId}`);
-  if (allowance !== 'allowed') return { ok: false, error: allowance === 'limited' ? ACTION_LIMITED : ACTION_UNAVAILABLE };
+  if (allowance !== 'allowed')
+    return { ok: false, error: allowance === 'limited' ? ACTION_LIMITED : ACTION_UNAVAILABLE };
 
   const db = supabaseAdmin();
   const email = (user.email ?? '').toLowerCase();
@@ -36,9 +47,14 @@ export async function redeemPromo(raw: unknown): Promise<RedeemResult> {
   try {
     const s = stripe();
     const sub = await currentSubscription(db, site.tenantId);
-    if (sub === null || sub.unitCents === 0) return { ok: false, error: 'Promo codes are for paid plans.' };
+    if (sub === null || sub.unitCents === 0)
+      return { ok: false, error: 'Promo codes are for paid plans.' };
     const now = new Date();
-    if (discountRunning(sub, now)) return { ok: false, error: `You already have a discount running (${sub.discountLabel ?? ''}). You can use another code once it ends.` };
+    if (discountRunning(sub, now))
+      return {
+        ok: false,
+        error: `You already have a discount running (${sub.discountLabel ?? ''}). You can use another code once it ends.`,
+      };
     const check = await checkPromo(s, db, { code, email, tenantId: site.tenantId, isNew: false });
     if (!check.ok) return { ok: false, error: REFUSALS[check.why] };
     held = await claimPromo(db, code, site.tenantId, email);
@@ -47,8 +63,18 @@ export async function redeemPromo(raw: unknown): Promise<RedeemResult> {
     revalidatePath('/manage/plan');
     return { ok: true, message: `Done: ${discountLabel(check.promo)}.` };
   } catch (err) {
-    logger.error('promo code failed', { tenantId: site.tenantId, code, error: err instanceof Error ? err.message : String(err) });
-    if (held) await releasePromo(db, code, site.tenantId).catch((e: unknown) => logger.error('promo code not released', { code, error: e instanceof Error ? e.message : String(e) }));
+    logger.error('promo code failed', {
+      tenantId: site.tenantId,
+      code,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    if (held)
+      await releasePromo(db, code, site.tenantId).catch((e: unknown) =>
+        logger.error('promo code not released', {
+          code,
+          error: e instanceof Error ? e.message : String(e),
+        }),
+      );
     return { ok: false, error: FAILED };
   }
 }

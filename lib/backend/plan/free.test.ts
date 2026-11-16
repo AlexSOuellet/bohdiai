@@ -4,7 +4,9 @@ import { isFreePlan } from './plan';
 import { planFeatureRows } from './plan-features';
 
 const db = (answer: { data: unknown; error: unknown }) =>
-  ({ from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => answer }) }) }) }) as never;
+  ({
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => answer }) }) }),
+  }) as never;
 
 describe('Free (Alex, 2026-10-24)', () => {
   it('is its own plan, below Showcase', () => {
@@ -14,7 +16,9 @@ describe('Free (Alex, 2026-10-24)', () => {
   });
 
   it('turns on products and Your plan only: no events (Alex, 2026-10-28), none of the site screens, and the way up (Alex, 2026-11-09)', () => {
-    const on = planFeatureRows('free').filter((r) => r.enabled).map((r) => r.feature_key);
+    const on = planFeatureRows('free')
+      .filter((r) => r.enabled)
+      .map((r) => r.feature_key);
     expect(on.sort()).toEqual(['catalog', 'plan']);
     expect(planFeatureRows('free').find((r) => r.feature_key === 'profile')?.enabled).toBe(false);
   });
@@ -23,6 +27,8 @@ describe('Free (Alex, 2026-10-24)', () => {
     expect(await isFreeSite(db({ data: { plan: 'free' }, error: null }), 't1')).toBe(true);
     expect(await isFreeSite(db({ data: { plan: 'lite' }, error: null }), 't1')).toBe(false);
     expect(await isFreeSite(db({ data: null, error: null }), 't1')).toBe(false);
-    await expect(isFreeSite(db({ data: null, error: { message: 'down' } }), 't1')).rejects.toThrow('Could not load the plan: down');
+    await expect(isFreeSite(db({ data: null, error: { message: 'down' } }), 't1')).rejects.toThrow(
+      'Could not load the plan: down',
+    );
   });
 });

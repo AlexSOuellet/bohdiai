@@ -17,7 +17,9 @@ export const dynamic = 'force-dynamic';
 
 /** Back from Stripe's card page while moving up from Free: the card goes on, Stripe
  *  charges the first period, the site steps up, and the site form opens. */
-export default async function FreeCardDonePage({ searchParams }: PageProps<'/manage/plan/card'>): Promise<never> {
+export default async function FreeCardDonePage({
+  searchParams,
+}: PageProps<'/manage/plan/card'>): Promise<never> {
   const { user, site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) notFound();
@@ -27,23 +29,45 @@ export default async function FreeCardDonePage({ searchParams }: PageProps<'/man
   try {
     const db = supabaseAdmin();
     const sub = await currentSubscription(db, site.tenantId);
-    if (session !== undefined && session !== '' && sub !== null && (await freeSite(db, site.tenantId)).free) {
+    if (
+      session !== undefined &&
+      session !== '' &&
+      sub !== null &&
+      (await freeSite(db, site.tenantId)).free
+    ) {
       const s = stripe();
       const put = await finishCardPage(s, session, site.tenantId, sub.stripeId);
       if (put.ok && put.then !== null && isSitePlan(put.then.plan) && isBilling(put.then.billing)) {
         const to = put.then.plan;
-        const r = await chargeAndStepUp(s, db, { tenantId: site.tenantId, stripeId: sub.stripeId, to, billing: put.then.billing });
+        const r = await chargeAndStepUp(s, db, {
+          tenantId: site.tenantId,
+          stripeId: sub.stripeId,
+          to,
+          billing: put.then.billing,
+        });
         if (r.ok) {
-          await sendPlanChange({ siteName: site.businessName, subdomain: site.subdomain, makerEmail: user.email ?? '', change: { kind: 'upgrade', to: planOf(to).name } });
+          await sendPlanChange({
+            siteName: site.businessName,
+            subdomain: site.subdomain,
+            makerEmail: user.email ?? '',
+            change: { kind: 'upgrade', to: planOf(to).name },
+          });
           next = ONBOARDING_PATH;
         } else {
           next = `/manage/plan?up=${'declined' in r ? 'declined' : 'switching'}`;
-          if (!('declined' in r)) logger.error('free upgrade: paid but not stepped up', { tenantId: site.tenantId, error: movedUpError(r) });
+          if (!('declined' in r))
+            logger.error('free upgrade: paid but not stepped up', {
+              tenantId: site.tenantId,
+              error: movedUpError(r),
+            });
         }
       }
     }
   } catch (err) {
-    logger.error('free upgrade: card return failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+    logger.error('free upgrade: card return failed', {
+      tenantId: site.tenantId,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
   redirect(next as Route);
 }

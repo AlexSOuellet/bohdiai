@@ -10,12 +10,23 @@ import type { Billing, UpgradeQuote } from './billing';
 import type { SitePlan } from './plan';
 import type { PlanState } from './queries';
 
-export async function upgradeQuotes(stripeId: string, state: Pick<PlanState, 'plan' | 'billing' | 'renewsOn' | 'today'>, to: SitePlan): Promise<Record<Billing, UpgradeQuote>> {
+export async function upgradeQuotes(
+  stripeId: string,
+  state: Pick<PlanState, 'plan' | 'billing' | 'renewsOn' | 'today'>,
+  to: SitePlan,
+): Promise<Record<Billing, UpgradeQuote>> {
   const s = stripe();
   const quote = async (billing: Billing): Promise<UpgradeQuote> => {
     const price = await findPrice(s, to, billing);
     const preview = await previewNow(s, stripeId, price);
-    return quoteFromPreview(preview, { from: state.plan, fromBilling: state.billing, billing, priceCents: price.unit_amount ?? 0, renewsOn: state.renewsOn, today: state.today });
+    return quoteFromPreview(preview, {
+      from: state.plan,
+      fromBilling: state.billing,
+      billing,
+      priceCents: price.unit_amount ?? 0,
+      renewsOn: state.renewsOn,
+      today: state.today,
+    });
   };
   const [monthly, yearly] = await Promise.all([quote('monthly'), quote('yearly')]);
   return { monthly, yearly };

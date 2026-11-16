@@ -13,7 +13,15 @@ const FAILED = 'Something went wrong. Check your connection and try again.';
  *  current term, then comes down (kept and hidden, never deleted). Until that day
  *  the maker can keep it. On Market and Full, Showcase is offered as a quieter
  *  choice first, never automatically. */
-export function CancelPanel({ cancels, endsOn, offerShowcase }: { cancels: boolean; endsOn: string; offerShowcase: boolean }): React.ReactElement {
+export function CancelPanel({
+  cancels,
+  endsOn,
+  offerShowcase,
+}: {
+  cancels: boolean;
+  endsOn: string;
+  offerShowcase: boolean;
+}): React.ReactElement {
   const router = useRouter();
   const notice = useNotice();
   const [busy, setBusy] = useState(false);
@@ -46,7 +54,12 @@ export function CancelPanel({ cancels, endsOn, offerShowcase }: { cancels: boole
       {cancels ? (
         <>
           <p className="bk-note">{`Your site goes down on ${endsOn}, at the end of your current term. Nothing is deleted. Changed your mind? Keep it before then.`}</p>
-          <button type="button" className="bk-btn" disabled={busy} onClick={() => void run(keepSite)}>
+          <button
+            type="button"
+            className="bk-btn"
+            disabled={busy}
+            onClick={() => void run(keepSite)}
+          >
             Keep my site
           </button>
         </>
@@ -61,7 +74,13 @@ export function CancelPanel({ cancels, endsOn, offerShowcase }: { cancels: boole
               </Link>
             </p>
           )}
-          <ConfirmButton label="Cancel my site" confirmLabel={`Yes, close it on ${endsOn}`} keepLabel="Keep my site" disabled={busy} onConfirm={() => void run(cancelAtTermEnd)} />
+          <ConfirmButton
+            label="Cancel my site"
+            confirmLabel={`Yes, close it on ${endsOn}`}
+            keepLabel="Keep my site"
+            disabled={busy}
+            onConfirm={() => void run(cancelAtTermEnd)}
+          />
         </>
       )}
     </section>

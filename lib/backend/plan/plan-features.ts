@@ -14,7 +14,14 @@ import { LINK_TARGETS, type LinkTarget } from '@/lib/archetypes/main-street/link
 
 /** Every plan: About you, markets, the QR code, the plan screen, and the headline at
  *  the top of the home page (the headline and the line under it; Alex, 2026-10-19). */
-const EVERY_PLAN: readonly FeatureKey[] = ['profile', 'market_dates', 'qr_codes', 'plan', 'headline', 'background'];
+const EVERY_PLAN: readonly FeatureKey[] = [
+  'profile',
+  'market_dates',
+  'qr_codes',
+  'plan',
+  'headline',
+  'background',
+];
 /** Free (Alex, 2026-10-24): no site, so none of the site screens. Products to work
  *  with; no events (Alex, 2026-10-28), they start on Showcase. Tools and Contact
  *  support are on every plan. Your plan is the way up to a site (Alex, 2026-11-09). */
@@ -25,7 +32,15 @@ const SHOWCASE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery_pieces'];
 /** Market (Alex, 2026-10-11 and 2026-10-20): everything Showcase has, the whole catalog with prices,
  *  and the whole market app (records, costs and results included). No online selling,
  *  promotions, collections or extra photos; a few testimonials the maker types in. */
-const LITE: readonly FeatureKey[] = [...EVERY_PLAN, 'gallery', 'catalog', 'market_details', 'market_shop', 'market_records', 'testimonials'];
+const LITE: readonly FeatureKey[] = [
+  ...EVERY_PLAN,
+  'gallery',
+  'catalog',
+  'market_details',
+  'market_shop',
+  'market_records',
+  'testimonials',
+];
 const FULL: readonly FeatureKey[] = [
   ...LITE,
   'collections',
@@ -49,7 +64,9 @@ export const PLAN_FEATURES: Record<SitePlan, readonly FeatureKey[]> = {
 export const PLAN_MANAGED: readonly FeatureKey[] = [...new Set([...SHOWCASE, ...FULL])];
 
 /** The rows that put a site on `plan`: each managed switch on or off. */
-export function planFeatureRows(plan: AccountPlan): { feature_key: FeatureKey; enabled: boolean }[] {
+export function planFeatureRows(
+  plan: AccountPlan,
+): { feature_key: FeatureKey; enabled: boolean }[] {
   const on = new Set(plan === 'free' ? FREE : PLAN_FEATURES[plan]);
   return PLAN_MANAGED.map((key) => ({ feature_key: key, enabled: on.has(key) }));
 }
@@ -75,7 +92,8 @@ export const FEATURE_WORDS: Partial<Record<FeatureKey, string>> = {
   promotions: 'Sales and discount codes',
   new_arrivals: 'New arrivals on your home page',
   try_on: 'Trying on other looks (the look you chose stays)',
-  buyer_accounts: 'Customer accounts: your customers can’t sign in (their accounts and orders are kept)',
+  buyer_accounts:
+    'Customer accounts: your customers can’t sign in (their accounts and orders are kept)',
   market_records: 'Market costs, organizer details, notes and reviews',
 };
 
@@ -91,19 +109,30 @@ export function buyersLine(buyers: number): string {
  *  `buyers` is how many buyers have an account at her shop. */
 export function hiddenByMove(from: SitePlan, to: SitePlan, buyers = 0): string[] {
   const keep = new Set(PLAN_FEATURES[to]);
-  return PLAN_FEATURES[from].filter((k) => !keep.has(k)).flatMap((k) => (k === 'buyer_accounts' ? [buyersLine(buyers)] : (FEATURE_WORDS[k] ?? [])));
+  return PLAN_FEATURES[from]
+    .filter((k) => !keep.has(k))
+    .flatMap((k) => (k === 'buyer_accounts' ? [buyersLine(buyers)] : (FEATURE_WORDS[k] ?? [])));
 }
 
 /** The pages a link can point at on a plan. Without the catalog (Showcase) there is
  *  no shop and no collections, so no button may point at them; the gallery is
  *  where its work is, always on the page (with a catalog the work is the shop). */
 export function planLinkTargets(plan: SitePlan): readonly LinkTarget[] {
-  return linkTargetsFor(PLAN_FEATURES[plan].includes('catalog'), PLAN_FEATURES[plan].includes('collections'));
+  return linkTargetsFor(
+    PLAN_FEATURES[plan].includes('catalog'),
+    PLAN_FEATURES[plan].includes('collections'),
+  );
 }
 
 /** The same, from whether a site has its catalog and its collections switched on. */
-export function linkTargetsFor(hasCatalog: boolean, hasCollections: boolean): readonly LinkTarget[] {
+export function linkTargetsFor(
+  hasCatalog: boolean,
+  hasCollections: boolean,
+): readonly LinkTarget[] {
   return LINK_TARGETS.filter(
-    (t) => (t !== 'shop' || hasCatalog) && (t !== 'collections' || (hasCatalog && hasCollections)) && (t !== 'gallery' || !hasCatalog),
+    (t) =>
+      (t !== 'shop' || hasCatalog) &&
+      (t !== 'collections' || (hasCatalog && hasCollections)) &&
+      (t !== 'gallery' || !hasCatalog),
   );
 }

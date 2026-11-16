@@ -1,9 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 
-const { cancelAtTermEnd, keepSite, refresh } = vi.hoisted(() => ({ cancelAtTermEnd: vi.fn(), keepSite: vi.fn(), refresh: vi.fn() }));
+const { cancelAtTermEnd, keepSite, refresh } = vi.hoisted(() => ({
+  cancelAtTermEnd: vi.fn(),
+  keepSite: vi.fn(),
+  refresh: vi.fn(),
+}));
 vi.mock('@/lib/backend/plan/actions', () => ({ cancelAtTermEnd, keepSite }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }), unstable_rethrow: () => undefined }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh }),
+  unstable_rethrow: () => undefined,
+}));
 
 import { CancelPanel } from './CancelPanel';
 
@@ -30,7 +37,9 @@ describe('CancelPanel', () => {
 
   it('offers Showcase first on Market and Full, never on Showcase', () => {
     const { rerender } = render(<CancelPanel cancels={false} endsOn={END} offerShowcase />);
-    expect(screen.getByRole('link', { name: 'Move to Showcase' }).getAttribute('href')).toBe('/manage/plan/change?to=showcase');
+    expect(screen.getByRole('link', { name: 'Move to Showcase' }).getAttribute('href')).toBe(
+      '/manage/plan/change?to=showcase',
+    );
     rerender(<CancelPanel cancels={false} endsOn={END} offerShowcase={false} />);
     expect(screen.queryByRole('link', { name: 'Move to Showcase' })).toBeNull();
   });
@@ -43,9 +52,16 @@ describe('CancelPanel', () => {
   });
 
   it('shows a failure plainly', async () => {
-    keepSite.mockResolvedValueOnce({ ok: false, error: 'That couldn’t be saved. Try again in a moment.' });
+    keepSite.mockResolvedValueOnce({
+      ok: false,
+      error: 'That couldn’t be saved. Try again in a moment.',
+    });
     render(<CancelPanel cancels endsOn={END} offerShowcase={false} />);
     fireEvent.click(screen.getByRole('button', { name: 'Keep my site' }));
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('That couldn’t be saved. Try again in a moment.'));
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toBe(
+        'That couldn’t be saved. Try again in a moment.',
+      ),
+    );
   });
 });

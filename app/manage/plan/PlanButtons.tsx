@@ -77,10 +77,15 @@ export function PlanButtons({
         <div className="bk-plan-billing">
           <p className="bk-note">
             {switchBilling === 'yearly'
-              ? 'Pay yearly and get two months free. The switch happens today, and the unused part of this month counts toward the year.'
+              ? `Pay yearly and get two months free. The switch happens today, and the unused part of this month counts toward the year.${demo ? '' : ' You pay on Stripe’s own page, with the card on file or a different one.'}`
               : `Pay monthly instead. The switch happens when your year ends, on ${renewsOn}, so you keep the year you paid for.`}
           </p>
-          <button type="button" className="bk-btn" disabled={busy} onClick={() => void run(() => changeBilling(switchBilling))}>
+          <button
+            type="button"
+            className="bk-btn"
+            disabled={busy}
+            onClick={() => void run(() => changeBilling(switchBilling))}
+          >
             {switchBilling === 'yearly' ? 'Switch to yearly' : 'Switch to monthly'}
           </button>
         </div>
@@ -90,15 +95,24 @@ export function PlanButtons({
           {pending !== null && (
             <div className="bk-demo-note" role="note">
               <p>
-                <strong>This is a demo.</strong> On a real site, your move to {pending.planName} happens on {pending.on}, when
-                your plan renews. Want to see it now?
+                <strong>This is a demo.</strong> On a real site, your move to {pending.planName}{' '}
+                happens on {pending.on}, when your plan renews. Want to see it now?
               </p>
-              <button type="button" className="bk-btn" disabled={busy} onClick={() => void run(skipToRenewal)}>
+              <button
+                type="button"
+                className="bk-btn"
+                disabled={busy}
+                onClick={() => void run(skipToRenewal)}
+              >
                 Move to {pending.planName} now
               </button>
             </div>
           )}
-          <span className="bk-demo-billing" role="group" aria-label="Demo only: try monthly or yearly billing">
+          <span
+            className="bk-demo-billing"
+            role="group"
+            aria-label="Demo only: try monthly or yearly billing"
+          >
             <span className="bk-label">Demo only: try monthly or yearly billing</span>
             {(['monthly', 'yearly'] as const).map((b) => (
               <button

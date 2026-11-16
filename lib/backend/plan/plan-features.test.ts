@@ -23,29 +23,51 @@ describe('what each plan switches on', () => {
   });
 
   it('gives every plan the headline', () => {
-    for (const plan of ['showcase', 'lite', 'full'] as const) expect(PLAN_FEATURES[plan]).toContain('headline');
+    for (const plan of ['showcase', 'lite', 'full'] as const)
+      expect(PLAN_FEATURES[plan]).toContain('headline');
   });
 
   it('gives Market the catalog and the whole market app, and keeps collections and online selling for Full', () => {
     expect(PLAN_FEATURES.lite).toEqual(
-      expect.arrayContaining(['catalog', 'market_details', 'market_shop', 'market_records', 'testimonials']),
+      expect.arrayContaining([
+        'catalog',
+        'market_details',
+        'market_shop',
+        'market_records',
+        'testimonials',
+      ]),
     );
-    for (const k of ['collections', 'cart', 'promotions', 'product_photos', 'new_arrivals'] as const) expect(PLAN_FEATURES.lite).not.toContain(k);
+    for (const k of [
+      'collections',
+      'cart',
+      'promotions',
+      'product_photos',
+      'new_arrivals',
+    ] as const)
+      expect(PLAN_FEATURES.lite).not.toContain(k);
     expect(PLAN_FEATURES.full).toEqual(
-      expect.arrayContaining(['collections', 'cart', 'promotions', 'new_arrivals', 'market_records']),
+      expect.arrayContaining([
+        'collections',
+        'cart',
+        'promotions',
+        'new_arrivals',
+        'market_records',
+      ]),
     );
   });
 
   it('builds on the plan below, and only names real switches', () => {
     // Showcase's gallery from the catalog gives way to the shop itself on Market.
-    for (const k of PLAN_FEATURES.showcase) expect(PLAN_FEATURES.lite).toContain(k === 'gallery_pieces' ? 'catalog' : k);
+    for (const k of PLAN_FEATURES.showcase)
+      expect(PLAN_FEATURES.lite).toContain(k === 'gallery_pieces' ? 'catalog' : k);
     expect(PLAN_FEATURES.lite).not.toContain('gallery_pieces');
     for (const k of PLAN_FEATURES.lite) expect(PLAN_FEATURES.full).toContain(k);
     for (const k of PLAN_MANAGED) expect(Object.keys(FEATURES)).toContain(k);
   });
 
   it('never touches the switches the plans don’t decide', () => {
-    for (const k of ['demo_checkout', 'custom_domain_panel', 'video']) expect(PLAN_MANAGED).not.toContain(k);
+    for (const k of ['demo_checkout', 'custom_domain_panel', 'video'])
+      expect(PLAN_MANAGED).not.toContain(k);
     expect(PLAN_MANAGED).toContain('digital_products');
   });
 
@@ -56,7 +78,9 @@ describe('what each plan switches on', () => {
     expect(rows.find((r) => r.feature_key === 'gallery_pieces')?.enabled).toBe(true);
     // The old Gallery screen of loose photos is off on Showcase and back on above it.
     expect(rows.find((r) => r.feature_key === 'gallery')?.enabled).toBe(false);
-    expect(planFeatureRows('lite').find((r) => r.feature_key === 'gallery_pieces')?.enabled).toBe(false);
+    expect(planFeatureRows('lite').find((r) => r.feature_key === 'gallery_pieces')?.enabled).toBe(
+      false,
+    );
   });
 });
 
@@ -99,8 +123,12 @@ describe('moving between plans', () => {
   });
 
   it('says how many buyers lose sign-in when she steps down from Full (Alex, 2026-10-25)', () => {
-    expect(hiddenByMove('full', 'lite', 1).at(-1)).toBe('Customer accounts: 1 customer with an account at your shop won’t be able to sign in (their accounts and orders are kept, and sign-in comes back when you return to Full)');
-    expect(hiddenByMove('full', 'lite', 12).at(-1)).toMatch(/^Customer accounts: 12 customers with an account/);
+    expect(hiddenByMove('full', 'lite', 1).at(-1)).toBe(
+      'Customer accounts: 1 customer with an account at your shop won’t be able to sign in (their accounts and orders are kept, and sign-in comes back when you return to Full)',
+    );
+    expect(hiddenByMove('full', 'lite', 12).at(-1)).toMatch(
+      /^Customer accounts: 12 customers with an account/,
+    );
   });
 });
 
@@ -160,10 +188,14 @@ describe('the pages a link can point at', () => {
   it('Showcase has no shop and no collections but jumps to its gallery; Market has no collections; Full has every page', async () => {
     const { planLinkTargets } = await import('./plan-features');
     const { LINK_TARGETS } = await import('@/lib/archetypes/main-street/links');
-    expect(planLinkTargets('showcase')).toEqual(LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections'));
+    expect(planLinkTargets('showcase')).toEqual(
+      LINK_TARGETS.filter((t) => t !== 'shop' && t !== 'collections'),
+    );
     expect(planLinkTargets('showcase')).toContain('gallery');
     // With a catalog the work is the shop, so no button jumps to the gallery.
-    expect(planLinkTargets('lite')).toEqual(LINK_TARGETS.filter((t) => t !== 'collections' && t !== 'gallery'));
+    expect(planLinkTargets('lite')).toEqual(
+      LINK_TARGETS.filter((t) => t !== 'collections' && t !== 'gallery'),
+    );
     expect(planLinkTargets('full')).toEqual(LINK_TARGETS.filter((t) => t !== 'gallery'));
   });
 });

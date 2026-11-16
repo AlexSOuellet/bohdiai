@@ -51,10 +51,14 @@ export default async function PlanChangePage({
             from={planOf(state.plan)}
             to={planOf(to)}
             fromBilling={state.billing}
+            pays={how.how === 'stripe' ? 'stripe' : how.how === 'demo' ? 'demo' : 'nothing'}
             quotes={
               how.how === 'stripe'
                 ? await upgradeQuotes(how.stripeId, state, to)
-                : { monthly: quoteUpgrade(state, to, 'monthly', today), yearly: quoteUpgrade(state, to, 'yearly', today) }
+                : {
+                    monthly: quoteUpgrade(state, to, 'monthly', today),
+                    yearly: quoteUpgrade(state, to, 'yearly', today),
+                  }
             }
           />
         ) : (
@@ -62,7 +66,13 @@ export default async function PlanChangePage({
             kind="down"
             from={planOf(state.plan)}
             to={planOf(to)}
-            hidden={hiddenByMove(state.plan, to, move === 'down' && on.has('buyer_accounts') ? await countBuyers(supabaseAdmin(), site.tenantId) : 0)}
+            hidden={hiddenByMove(
+              state.plan,
+              to,
+              move === 'down' && on.has('buyer_accounts')
+                ? await countBuyers(supabaseAdmin(), site.tenantId)
+                : 0,
+            )}
             renewsOn={state.renewsOn}
             fromBilling={state.billing}
             daysLeft={daysLeft(today, state.renewsOn, state.billing)}

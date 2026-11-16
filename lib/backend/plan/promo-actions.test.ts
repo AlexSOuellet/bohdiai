@@ -11,12 +11,27 @@ const m = vi.hoisted(() => ({
 }));
 
 vi.mock('next/cache', () => ({ revalidatePath: m.revalidatePath }));
-vi.mock('@/lib/backend/current-site', () => ({ requireActingSite: async () => ({ user: { email: 'Lena@Example.com' }, site: { tenantId: 't1' } }) }));
-vi.mock('@/lib/backend/action-limit', () => ({ allowKey: m.allowKey, ACTION_LIMITED: 'slow down', ACTION_UNAVAILABLE: 'unavailable' }));
+vi.mock('@/lib/backend/current-site', () => ({
+  requireActingSite: async () => ({
+    user: { email: 'Lena@Example.com' },
+    site: { tenantId: 't1' },
+  }),
+}));
+vi.mock('@/lib/backend/action-limit', () => ({
+  allowKey: m.allowKey,
+  ACTION_LIMITED: 'slow down',
+  ACTION_UNAVAILABLE: 'unavailable',
+}));
 vi.mock('@/lib/supabase', () => ({ supabaseAdmin: () => ({}) }));
 vi.mock('@/lib/billing/stripe', () => ({ stripe: () => ({}) }));
 vi.mock('@/lib/billing/maker-subscription', () => ({ currentSubscription: m.currentSubscription }));
-vi.mock('@/lib/billing/promos', async (orig) => ({ ...(await orig<object>()), checkPromo: m.checkPromo, claimPromo: m.claimPromo, applyDiscount: m.applyDiscount, releasePromo: m.releasePromo }));
+vi.mock('@/lib/billing/promos', async (orig) => ({
+  ...(await orig<object>()),
+  checkPromo: m.checkPromo,
+  claimPromo: m.claimPromo,
+  applyDiscount: m.applyDiscount,
+  releasePromo: m.releasePromo,
+}));
 
 import { redeemPromo } from './promo-actions';
 
@@ -36,9 +51,20 @@ beforeEach(() => {
 describe('redeemPromo', () => {
   it('holds the code, then puts it on the plan', async () => {
     expect(await redeemPromo(' spring10 ')).toEqual({ ok: true, message: 'Done: 10% off.' });
-    expect(m.checkPromo).toHaveBeenCalledWith({}, {}, { code: 'SPRING10', email: 'lena@example.com', tenantId: 't1', isNew: false });
+    expect(m.checkPromo).toHaveBeenCalledWith(
+      {},
+      {},
+      { code: 'SPRING10', email: 'lena@example.com', tenantId: 't1', isNew: false },
+    );
     expect(m.claimPromo).toHaveBeenCalledWith({}, 'SPRING10', 't1', 'lena@example.com');
-    expect(m.applyDiscount).toHaveBeenCalledWith({}, {}, paying, promo, expect.any(Date), 'SPRING10');
+    expect(m.applyDiscount).toHaveBeenCalledWith(
+      {},
+      {},
+      paying,
+      promo,
+      expect.any(Date),
+      'SPRING10',
+    );
   });
   it('asks for a code', async () => {
     expect(await redeemPromo('  ')).toEqual({ ok: false, error: 'Enter your code.' });
@@ -58,12 +84,24 @@ describe('redeemPromo', () => {
     expect(await redeemPromo('X')).toEqual({ ok: false, error: 'Promo codes are for paid plans.' });
   });
   it('allows one discount at a time', async () => {
-    m.currentSubscription.mockResolvedValue({ ...paying, discountLabel: '3 months free', discountEndsAt: '2099-01-01T00:00:00Z' });
-    expect(await redeemPromo('X')).toEqual({ ok: false, error: 'You already have a discount running (3 months free). You can use another code once it ends.' });
+    m.currentSubscription.mockResolvedValue({
+      ...paying,
+      discountLabel: '3 months free',
+      discountEndsAt: '2099-01-01T00:00:00Z',
+    });
+    expect(await redeemPromo('X')).toEqual({
+      ok: false,
+      error:
+        'You already have a discount running (3 months free). You can use another code once it ends.',
+    });
     expect(m.claimPromo).not.toHaveBeenCalled();
   });
   it('allows a new code once the last discount has ended', async () => {
-    m.currentSubscription.mockResolvedValue({ ...paying, discountLabel: '3 months free', discountEndsAt: '2020-01-01T00:00:00Z' });
+    m.currentSubscription.mockResolvedValue({
+      ...paying,
+      discountLabel: '3 months free',
+      discountEndsAt: '2020-01-01T00:00:00Z',
+    });
     expect((await redeemPromo('X')).ok).toBe(true);
   });
   it.each([

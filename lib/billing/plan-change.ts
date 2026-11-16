@@ -32,11 +32,16 @@ export function planOfKey(key: string | null | undefined): PlanPrice | null {
 }
 
 /** The live price for a plan. */
-export async function findPrice(s: Stripe, plan: AccountPlan, billing: Billing): Promise<Stripe.Price> {
+export async function findPrice(
+  s: Stripe,
+  plan: AccountPlan,
+  billing: Billing,
+): Promise<Stripe.Price> {
   const key = lookupKey(plan, billing);
   const prices = await s.prices.list({ lookup_keys: [key], active: true, limit: 1 });
   const price = prices.data[0];
-  if (price === undefined) throw new Error(`Stripe has no price ${key}: run scripts/stripe-plans.ts`);
+  if (price === undefined)
+    throw new Error(`Stripe has no price ${key}: run scripts/stripe-plans.ts`);
   return price;
 }
 
@@ -49,7 +54,8 @@ async function live(s: Stripe, stripeId: string): Promise<Live> {
   return { sub, item };
 }
 
-const idOf = (x: string | { id: string } | null): string | null => (x === null ? null : typeof x === 'string' ? x : x.id);
+const idOf = (x: string | { id: string } | null): string | null =>
+  x === null ? null : typeof x === 'string' ? x : x.id;
 
 /** The discounts running on the subscription, to carry into any change. */
 function discountsOf(sub: Stripe.Subscription): { discount: string }[] {
@@ -69,12 +75,20 @@ function anchorOf(item: Stripe.SubscriptionItem): { type: 'now' | 'unchanged' } 
   return { type: freshPeriod(item) ? 'now' : 'unchanged' };
 }
 
-function changeItems(item: Stripe.SubscriptionItem, price: Stripe.Price): Stripe.SubscriptionUpdateParams.Item[] {
+function changeItems(
+  item: Stripe.SubscriptionItem,
+  price: Stripe.Price,
+): Stripe.SubscriptionUpdateParams.Item[] {
   return [{ id: item.id, price: price.id }];
 }
 
 /** What changing to `price` now would charge today, from Stripe itself. */
-export async function previewNow(s: Stripe, stripeId: string, price: Stripe.Price): Promise<Stripe.Invoice> {
+export async function previewNow(
+  s: Stripe,
+  stripeId: string,
+  price: Stripe.Price,
+  at?: number,
+): Promise<Stripe.Invoice> {
   const { sub, item } = await live(s, stripeId);
   const customer = idOf(sub.customer);
   if (customer === null) throw new Error(`subscription ${stripeId} has no customer`);
@@ -85,26 +99,56 @@ export async function previewNow(s: Stripe, stripeId: string, price: Stripe.Pric
       items: changeItems(item, price),
       proration_behavior: 'always_invoice',
       billing_cycle_anchor: anchorOf(item),
+      ...(at === undefined ? {} : { proration_date: at }),
     },
   });
 }
 
 export type ChangeNow = { ok: true; sub: Stripe.Subscription } | { ok: false; declined: string };
 
-/** Change now and charge for it now. A declined card changes nothing and says why. */
-export async function changeNow(s: Stripe, stripeId: string, price: Stripe.Price, to: PlanPrice): Promise<ChangeNow> {
+/** How a change paid on Stripe's payment page is made (Alex, 2026-11-16): at the moment
+ *  its amount was worked out, on the card the maker paid with, noting which payment
+ *  paid for it so it's never made twice. */
+export type PaidBy = { session: string; at: number; card: string | null };
+
+/** Change now and charge for it now. A declined card changes nothing and says why.
+ *  `paid`: the maker already paid on Stripe's page, and that payment is credited first. */
+export async function changeNow(
+  s: Stripe,
+  stripeId: string,
+  price: Stripe.Price,
+  to: PlanPrice,
+  paid?: PaidBy,
+): Promise<ChangeNow> {
   const { sub, item } = await live(s, stripeId);
   // A change waiting for renewal is replaced by this one.
   const waiting = idOf(sub.schedule);
   if (waiting !== null) await s.subscriptionSchedules.release(waiting);
   try {
-    const changed = await s.subscriptions.update(sub.id, {
+    const params: Stripe.SubscriptionUpdateParams = {
       items: changeItems(item, price),
       proration_behavior: 'always_invoice',
       payment_behavior: 'error_if_incomplete',
       billing_cycle_anchor: anchorOf(item),
-      metadata: { ...sub.metadata, plan: to.plan, billing: billingFor(to.plan, to.billing) },
-    });
+      metadata: {
+        ...sub.metadata,
+        plan: to.plan,
+        billing: billingFor(to.plan, to.billing),
+        ...(paid === undefined ? {} : { paid_change: paid.session }),
+      },
+      ...(paid === undefined
+        ? {}
+        : {
+            proration_date: paid.at,
+            ...(paid.card === null ? {} : { default_payment_method: paid.card }),
+          }),
+    };
+    const changed =
+      paid === undefined
+        ? await s.subscriptions.update(sub.id, params)
+        : await s.subscriptions.update(sub.id, params, {
+            idempotencyKey: `plan-pay-change-${paid.session}`,
+          });
     return { ok: true, sub: changed };
   } catch (err) {
     if (isCardError(err)) return { ok: false, declined: err.message };
@@ -112,14 +156,45 @@ export async function changeNow(s: Stripe, stripeId: string, price: Stripe.Price
   }
 }
 
+/** Change now with nothing charged today: the small difference goes on the next bill
+ *  (an amount under Stripe's 50 cent card minimum, which gets no payment page). */
+export async function changeNowBillLater(
+  s: Stripe,
+  stripeId: string,
+  price: Stripe.Price,
+  to: PlanPrice,
+): Promise<ChangeNow> {
+  const { sub, item } = await live(s, stripeId);
+  const waiting = idOf(sub.schedule);
+  if (waiting !== null) await s.subscriptionSchedules.release(waiting);
+  const changed = await s.subscriptions.update(sub.id, {
+    items: changeItems(item, price),
+    proration_behavior: 'create_prorations',
+    billing_cycle_anchor: { type: 'unchanged' },
+    metadata: { ...sub.metadata, plan: to.plan, billing: billingFor(to.plan, to.billing) },
+  });
+  return { ok: true, sub: changed };
+}
+
 function isCardError(err: unknown): err is { message: string } {
-  return typeof err === 'object' && err !== null && (err as { type?: unknown }).type === 'StripeCardError' && typeof (err as { message?: unknown }).message === 'string';
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    (err as { type?: unknown }).type === 'StripeCardError' &&
+    typeof (err as { message?: unknown }).message === 'string'
+  );
 }
 
 /** Change at the next renewal: the rest of this period stays as it is, then `price`. */
-export async function changeAtRenewal(s: Stripe, stripeId: string, price: Stripe.Price, to: PlanPrice): Promise<void> {
+export async function changeAtRenewal(
+  s: Stripe,
+  stripeId: string,
+  price: Stripe.Price,
+  to: PlanPrice,
+): Promise<void> {
   const { sub, item } = await live(s, stripeId);
-  const scheduleId = idOf(sub.schedule) ?? (await s.subscriptionSchedules.create({ from_subscription: sub.id })).id;
+  const scheduleId =
+    idOf(sub.schedule) ?? (await s.subscriptionSchedules.create({ from_subscription: sub.id })).id;
   const schedule = await s.subscriptionSchedules.retrieve(scheduleId);
   const now = schedule.current_phase;
   const start = now?.start_date ?? item.current_period_start;
@@ -129,7 +204,13 @@ export async function changeAtRenewal(s: Stripe, stripeId: string, price: Stripe
   await s.subscriptionSchedules.update(scheduleId, {
     end_behavior: 'release',
     phases: [
-      { items: [{ price: item.price.id, quantity: 1 }], start_date: start, end_date: end, discounts, metadata: sub.metadata },
+      {
+        items: [{ price: item.price.id, quantity: 1 }],
+        start_date: start,
+        end_date: end,
+        discounts,
+        metadata: sub.metadata,
+      },
       {
         items: [{ price: price.id, quantity: 1 }],
         duration: { interval, interval_count: 1 },
@@ -151,8 +232,18 @@ export async function dropAtRenewal(s: Stripe, stripeId: string): Promise<void> 
 /** Stripe's preview, in the shape the checkout screen shows. `renewsOn` is the current
  *  renewal day; a change of billing (or leaving Free) starts a new period today. */
 export function quoteFromPreview(
-  preview: Pick<Stripe.Invoice, 'amount_due' | 'starting_balance' | 'ending_balance' | 'total' | 'lines'>,
-  input: { from: AccountPlan; fromBilling: Billing; billing: Billing; priceCents: number; renewsOn: string; today: string },
+  preview: Pick<
+    Stripe.Invoice,
+    'amount_due' | 'starting_balance' | 'ending_balance' | 'total' | 'lines'
+  >,
+  input: {
+    from: AccountPlan;
+    fromBilling: Billing;
+    billing: Billing;
+    priceCents: number;
+    renewsOn: string;
+    today: string;
+  },
 ): UpgradeQuote {
   const sameBilling = input.from !== FREE_PLAN && input.billing === input.fromBilling;
   let partCents = 0;
@@ -184,7 +275,11 @@ export function quoteFromPreview(
 
 /** Whether moving from one plan and billing to another happens now (up, or monthly to
  *  yearly) or at renewal (down, or yearly to monthly). */
-export function whenChange(from: { plan: AccountPlan; billing: Billing }, to: { plan: SitePlan; billing: Billing }, rank: (p: AccountPlan) => number): 'now' | 'renewal' | 'same' {
+export function whenChange(
+  from: { plan: AccountPlan; billing: Billing },
+  to: { plan: SitePlan; billing: Billing },
+  rank: (p: AccountPlan) => number,
+): 'now' | 'renewal' | 'same' {
   const d = rank(to.plan) - rank(from.plan);
   if (d > 0) return 'now';
   if (d < 0) return 'renewal';

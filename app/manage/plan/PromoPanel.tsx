@@ -41,7 +41,14 @@ export function PromoPanel({ discount }: { discount: string | null }): React.Rea
           <label htmlFor="bk-promo" className="bk-label">
             Enter your code
           </label>
-          <input id="bk-promo" autoComplete="off" maxLength={30} className="bk-input" value={code} onChange={(e) => setCode(e.target.value)} />
+          <input
+            id="bk-promo"
+            autoComplete="off"
+            maxLength={30}
+            className="bk-input"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
         </div>
         <button type="submit" className="bk-btn" disabled={busy}>
           {busy ? 'Checking…' : 'Use code'}

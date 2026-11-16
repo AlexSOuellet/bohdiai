@@ -21,11 +21,14 @@ import { GALLERY_LIMIT } from '@/lib/backend/gallery/gallery-form';
 type Db = SupabaseClient<Database>;
 
 /** `first` is true only for whoever recorded it, so the confirmation email goes once. */
-export type Recorded = { paid: false } | { paid: true; tenantId: string; email: string | null; first: boolean };
+export type Recorded =
+  | { paid: false }
+  | { paid: true; tenantId: string; email: string | null; first: boolean };
 
 const UNIQUE_VIOLATION = '23505';
 
-const iso = (seconds: number | null | undefined): string | null => (seconds === null || seconds === undefined ? null : new Date(seconds * 1000).toISOString());
+const iso = (seconds: number | null | undefined): string | null =>
+  seconds === null || seconds === undefined ? null : new Date(seconds * 1000).toISOString();
 const day = (seconds: number): string => new Date(seconds * 1000).toISOString().slice(0, 10);
 
 /** Claims a Stripe happening by id; false when it was already claimed. */
@@ -43,7 +46,9 @@ export async function letGo(db: Db, id: string): Promise<void> {
 /** The period the subscription is in now, from its one item. */
 function period(sub: Stripe.Subscription): { start: number; end: number } | null {
   const item = sub.items.data[0];
-  return item === undefined ? null : { start: item.current_period_start, end: item.current_period_end };
+  return item === undefined
+    ? null
+    : { start: item.current_period_start, end: item.current_period_end };
 }
 
 /** Records a checkout once it's complete; says whether it is. */
@@ -54,10 +59,12 @@ export async function recordCheckout(s: Stripe, db: Db, sessionId: string): Prom
   const email = session.customer_details?.email ?? session.customer_email ?? null;
 
   const lock = `checkout:${session.id}`;
-  if (!(await claim(db, lock, 'checkout.session.completed'))) return { paid: true, tenantId, email, first: false };
+  if (!(await claim(db, lock, 'checkout.session.completed')))
+    return { paid: true, tenantId, email, first: false };
   try {
     const sub = session.subscription;
-    if (sub === null || typeof sub === 'string') throw new Error(`checkout ${session.id} came back without its subscription`);
+    if (sub === null || typeof sub === 'string')
+      throw new Error(`checkout ${session.id} came back without its subscription`);
     const plan = sub.metadata['plan'];
     if (!isAccountPlan(plan)) throw new Error(`subscription ${sub.id} names no plan`);
     const item = sub.items.data[0];
@@ -82,7 +89,10 @@ export async function recordCheckout(s: Stripe, db: Db, sessionId: string): Prom
     if (subErr !== null) throw new Error(`Could not save the billing record: ${subErr.message}`);
     const { error: tErr } = await db
       .from('tenants')
-      .update({ plan_billing: interval === 'year' ? 'yearly' : 'monthly', plan_renews_on: day(now.end) })
+      .update({
+        plan_billing: interval === 'year' ? 'yearly' : 'monthly',
+        plan_renews_on: day(now.end),
+      })
       .eq('id', tenantId);
     if (tErr !== null) throw new Error(`Could not save the renewal day: ${tErr.message}`);
     const code = sub.metadata['promo_code'];
@@ -93,7 +103,10 @@ export async function recordCheckout(s: Stripe, db: Db, sessionId: string): Prom
         code,
         tenantId,
         email: email.toLowerCase(),
-        discount: { percent: Number(sub.metadata['promo_percent']), months: months === undefined ? null : Number(months) },
+        discount: {
+          percent: Number(sub.metadata['promo_percent']),
+          months: months === undefined ? null : Number(months),
+        },
         interval,
         now: new Date(),
       });
@@ -117,7 +130,9 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
       cancel_at_period_end: sub.cancel_at_period_end,
       canceled_at: iso(sub.canceled_at),
       ended_at: iso(sub.ended_at),
-      ...(now === null ? {} : { current_period_start: iso(now.start), current_period_end: iso(now.end) }),
+      ...(now === null
+        ? {}
+        : { current_period_start: iso(now.start), current_period_end: iso(now.end) }),
       ...(item === undefined || priced === null
         ? {}
         : {
@@ -132,13 +147,20 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
   const tenantId = sub.metadata['tenant_id'];
   // The term is over: the site comes down, kept and hidden, never deleted.
   if (sub.status === 'canceled' && tenantId !== undefined) {
-    const { error: downErr } = await db.from('tenants').update({ status: 'offline', plan_cancels: false }).eq('id', tenantId).eq('status', 'active');
+    const { error: downErr } = await db
+      .from('tenants')
+      .update({ status: 'offline', plan_cancels: false })
+      .eq('id', tenantId)
+      .eq('status', 'active');
     if (downErr !== null) throw new Error(`Could not close the site: ${downErr.message}`);
     return;
   }
   if (now === null || tenantId === undefined) return;
   if (priced !== null) await followPlan(db, tenantId, priced);
-  const { error: tErr } = await db.from('tenants').update({ plan_renews_on: day(now.end) }).eq('id', tenantId);
+  const { error: tErr } = await db
+    .from('tenants')
+    .update({ plan_renews_on: day(now.end) })
+    .eq('id', tenantId);
   if (tErr !== null) throw new Error(`Could not save the renewal day: ${tErr.message}`);
 }
 
@@ -148,8 +170,16 @@ export async function recordSubscription(db: Db, sub: Stripe.Subscription): Prom
  * for renewal happens here: Stripe moves the price on renewal day and says so. On
  * Showcase, the pieces the maker picked become the gallery.
  */
-async function followPlan(db: Db, tenantId: string, priced: NonNullable<ReturnType<typeof planOfKey>>): Promise<void> {
-  const { data, error } = await db.from('tenants').select('plan, plan_billing, plan_next, plan_next_gallery').eq('id', tenantId).maybeSingle();
+async function followPlan(
+  db: Db,
+  tenantId: string,
+  priced: NonNullable<ReturnType<typeof planOfKey>>,
+): Promise<void> {
+  const { data, error } = await db
+    .from('tenants')
+    .select('plan, plan_billing, plan_next, plan_next_gallery')
+    .eq('id', tenantId)
+    .maybeSingle();
   if (error !== null) throw new Error(`Could not read the site's plan: ${error.message}`);
   if (data === null) return;
   const billing = priced.plan === 'free' ? null : priced.billing;
@@ -164,6 +194,14 @@ async function followPlan(db: Db, tenantId: string, priced: NonNullable<ReturnTy
     const applied = await applyPlan(db, tenantId, priced.plan);
     if (!applied.ok) throw new Error(`Could not put the site on its plan: ${applied.error}`);
   }
-  const { error: tErr } = await db.from('tenants').update({ plan_billing: billing, plan_next: null, plan_next_billing: null, plan_next_gallery: null }).eq('id', tenantId);
+  const { error: tErr } = await db
+    .from('tenants')
+    .update({
+      plan_billing: billing,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_next_gallery: null,
+    })
+    .eq('id', tenantId);
   if (tErr !== null) throw new Error(`Could not save the plan's billing: ${tErr.message}`);
 }

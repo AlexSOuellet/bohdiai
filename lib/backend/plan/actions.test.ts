@@ -25,14 +25,58 @@ const billing = vi.hoisted(() => ({ currentSubscription: vi.fn(), setEndsWithTer
 vi.mock('@/lib/billing/stripe', () => ({ stripe: () => ({}) }));
 vi.mock('@/lib/billing/maker-subscription', () => billing);
 const pc = vi.hoisted(() => ({
-  findPrice: vi.fn(async (_s: unknown, plan: string, billing: string) => ({ id: `price_${plan}_${billing}` })),
-  changeNow: vi.fn(async (): Promise<unknown> => ({ ok: true, sub: { items: { data: [{ current_period_end: Date.UTC(2026, 10, 29) / 1000 }] } } })),
+  findPrice: vi.fn(async (_s: unknown, plan: string, billing: string) => ({
+    id: `price_${plan}_${billing}`,
+  })),
+  changeNow: vi.fn(
+    async (): Promise<unknown> => ({
+      ok: true,
+      sub: { items: { data: [{ current_period_end: Date.UTC(2026, 10, 29) / 1000 }] } },
+    }),
+  ),
   changeAtRenewal: vi.fn(async () => undefined),
   dropAtRenewal: vi.fn(async () => undefined),
+  changeNowBillLater: vi.fn(
+    async (): Promise<unknown> => ({ ok: true, sub: { items: { data: [] } } }),
+  ),
 }));
-vi.mock('@/lib/billing/plan-change', async (orig) => ({ ...(await orig<typeof PlanChange>()), ...pc }));
+vi.mock('@/lib/billing/plan-change', async (orig) => ({
+  ...(await orig<typeof PlanChange>()),
+  ...pc,
+}));
+const pay = vi.hoisted(() => ({
+  startPayPage: vi.fn(
+    async (): Promise<unknown> => ({
+      kind: 'page',
+      url: 'https://checkout.stripe.com/c/pay/cs_test_1',
+    }),
+  ),
+  finishPayPage: vi.fn(
+    async (): Promise<unknown> => ({
+      ok: true,
+      already: false,
+      pay: { plan: 'full', billing: 'monthly', kind: 'upgrade' },
+      sub: { items: { data: [{ current_period_end: Date.UTC(2026, 10, 29) / 1000 }] } },
+    }),
+  ),
+}));
+vi.mock('@/lib/billing/pay-change', async (orig) => ({ ...(await orig<object>()), ...pay }));
+const redirect = vi.hoisted(() =>
+  vi.fn((url: string) => {
+    throw Object.assign(new Error('NEXT_REDIRECT'), { url });
+  }),
+);
+vi.mock('next/navigation', () => ({ redirect }));
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ host: 'app.bohdiai.com' }) }));
+vi.mock('@/lib/backend/request-origin', () => ({ headersOrigin: () => 'https://app.bohdiai.com' }));
+const stepUp = vi.hoisted(() => vi.fn(async () => ({ ok: true })));
+vi.mock('./free-up', async (orig) => ({ ...(await orig<object>()), stepUp }));
 vi.mock('@/lib/backend/current-site', () => ({
-  requireActingSite: () => Promise.resolve({ user: { email: 'lena@example.com' }, site: { tenantId: 't1', businessName: 'Lena Hart Decoupage', subdomain: 'lena' } }),
+  requireActingSite: () =>
+    Promise.resolve({
+      user: { email: 'lena@example.com' },
+      site: { tenantId: 't1', businessName: 'Lena Hart Decoupage', subdomain: 'lena' },
+    }),
 }));
 vi.mock('@/lib/backend/site-features', () => ({
   getSiteFeatures: () => Promise.resolve(state.features),
@@ -61,7 +105,9 @@ const candidates = [
   { id: 'p1', name: 'Carol star', uploadId: 'u1', url: 'https://cdn/1.jpg' },
   { id: 'p2', name: 'Old Saint Nick', uploadId: 'u2', url: 'https://cdn/2.jpg' },
 ];
-const showcaseCandidates = vi.fn(() => Promise.resolve({ ok: true as const, products: candidates }));
+const showcaseCandidates = vi.fn(() =>
+  Promise.resolve({ ok: true as const, products: candidates }),
+);
 const galleryFromProducts = vi.fn(() => Promise.resolve({ ok: true as const, count: 1 }));
 vi.mock('./convert', async (orig) => ({
   ...(await orig<typeof Convert>()),
@@ -70,8 +116,27 @@ vi.mock('./convert', async (orig) => ({
   galleryFromProducts,
 }));
 
-const { upgradePlan, scheduleDowngrade, cancelScheduledChange, skipToRenewal, setDemoBilling, cancelAtTermEnd, keepSite, changeBilling } =
-  await import('./actions');
+const {
+  upgradePlan,
+  scheduleDowngrade,
+  cancelScheduledChange,
+  skipToRenewal,
+  setDemoBilling,
+  cancelAtTermEnd,
+  keepSite,
+  changeBilling,
+  finishPaidChange,
+} = await import('./actions');
+
+/** The page Stripe's payment page was opened at, from the redirect it threw. */
+async function redirected(work: () => Promise<unknown>): Promise<string> {
+  try {
+    await work();
+  } catch (err) {
+    return (err as { url: string }).url;
+  }
+  throw new Error('no redirect');
+}
 
 function on(over: Partial<PlanState> = {}): PlanState {
   return {
@@ -166,7 +231,10 @@ describe('upgrade', () => {
 
   it('refuses a sample site Stripe doesn’t bill, and a move that isn’t an upgrade', async () => {
     state.features = new Set(['plan']);
-    expect(await upgradePlan('lite', 'monthly')).toEqual({ ok: false, error: 'This site’s plan is changed by Alex. Use the email button on Your plan.' });
+    expect(await upgradePlan('lite', 'monthly')).toEqual({
+      ok: false,
+      error: 'This site’s plan is changed by Alex. Use the email button on Your plan.',
+    });
     state.features = new Set(['plan', 'demo_checkout']);
     expect(await upgradePlan('showcase', 'monthly')).toEqual({
       ok: false,
@@ -337,12 +405,19 @@ describe('downgrading to Showcase', () => {
   });
 
   it('stores the products she picked, in her order, dropping unknown ones', async () => {
-    expect(await scheduleDowngrade('showcase', 'monthly', ['p2', 'nope', 'p1'])).toEqual({ ok: true });
-    expect(writes).toEqual([expect.objectContaining({ plan_next: 'showcase', plan_next_gallery: ['p2', 'p1'] })]);
+    expect(await scheduleDowngrade('showcase', 'monthly', ['p2', 'nope', 'p1'])).toEqual({
+      ok: true,
+    });
+    expect(writes).toEqual([
+      expect.objectContaining({ plan_next: 'showcase', plan_next_gallery: ['p2', 'p1'] }),
+    ]);
   });
 
   it('asks her to pick at least one when she has products to show', async () => {
-    expect(await scheduleDowngrade('showcase', 'monthly', [])).toEqual({ ok: false, error: 'Pick at least one product to show on your Showcase page.' });
+    expect(await scheduleDowngrade('showcase', 'monthly', [])).toEqual({
+      ok: false,
+      error: 'Pick at least one product to show on your Showcase page.',
+    });
     expect(writes).toEqual([]);
   });
 
@@ -406,19 +481,31 @@ describe('cancel at the end of the term', () => {
 
   it('marks the site to close at the end of its term, on any site with a plan, and emails it', async () => {
     expect(await cancelAtTermEnd()).toEqual({ ok: true });
-    expect(writes).toEqual([{ plan_cancels: true, plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
-    expect(sendPlanChange).toHaveBeenCalledWith(expect.objectContaining({ makerEmail: 'lena@example.com', change: { kind: 'cancel', on: expect.stringContaining('October 29, 2026') } }));
+    expect(writes).toEqual([
+      { plan_cancels: true, plan_next: null, plan_next_billing: null, plan_next_gallery: null },
+    ]);
+    expect(sendPlanChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        makerEmail: 'lena@example.com',
+        change: { kind: 'cancel', on: expect.stringContaining('October 29, 2026') },
+      }),
+    );
   });
 
   it('keeps the site when the maker changes their mind, and emails that too', async () => {
     expect(await keepSite()).toEqual({ ok: true });
     expect(writes).toEqual([{ plan_cancels: false }]);
-    expect(sendPlanChange).toHaveBeenCalledWith(expect.objectContaining({ change: { kind: 'keep' } }));
+    expect(sendPlanChange).toHaveBeenCalledWith(
+      expect.objectContaining({ change: { kind: 'keep' } }),
+    );
   });
 
   it('says so when it can’t be saved, and sends nothing', async () => {
     state.writeError = 'boom';
-    expect(await cancelAtTermEnd()).toEqual({ ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' });
+    expect(await cancelAtTermEnd()).toEqual({
+      ok: false,
+      error: 'Your cancellation couldn’t be saved. Try again in a moment.',
+    });
     expect(sendPlanChange).not.toHaveBeenCalled();
   });
 
@@ -430,57 +517,143 @@ describe('cancel at the end of the term', () => {
 });
 
 describe('a site Stripe bills', () => {
-  const declined = { ok: false, declined: 'Your card was declined.' };
   beforeEach(() => {
     state.features = new Set(['plan']);
     state.plan = on({ plan: 'lite', billing: 'monthly', renewsOn: '2026-11-20' });
     billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1' });
   });
 
-  it('upgrades: Stripe charges first, then the site switches, with Stripe’s renewal day', async () => {
-    expect(await upgradePlan('full', 'monthly')).toEqual({ ok: true });
-    expect(pc.changeNow).toHaveBeenCalledWith({}, 'sub_1', { id: 'price_full_monthly' }, { plan: 'full', billing: 'monthly' });
-    expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'full');
-    expect(writes).toEqual([{ plan_billing: 'monthly', plan_renews_on: '2026-11-29', plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
-    expect(sendPlanChange).toHaveBeenCalledWith(expect.objectContaining({ change: { kind: 'upgrade', to: 'Maker Full' } }));
-  });
-
-  it('keeps the renewal day it had when Stripe gives none back', async () => {
-    pc.changeNow.mockResolvedValueOnce({ ok: true, sub: { items: { data: [] } } });
-    await upgradePlan('full', 'monthly');
-    expect(writes).toEqual([expect.objectContaining({ plan_renews_on: '2026-11-20' })]);
-  });
-
-  it('a declined card changes nothing and says what to do', async () => {
-    pc.changeNow.mockResolvedValueOnce(declined);
-    expect(await upgradePlan('full', 'monthly')).toEqual({ ok: false, error: 'Your card was declined: Your card was declined. Update your card under Billing, then try again.' });
+  it('upgrades on Stripe’s own payment page: nothing changes until the maker has paid (Alex, 2026-11-16)', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1', customerId: 'cus_1' });
+    expect(await redirected(() => upgradePlan('full', 'monthly'))).toBe(
+      'https://checkout.stripe.com/c/pay/cs_test_1',
+    );
+    expect(pay.startPayPage).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        stripeId: 'sub_1',
+        customerId: 'cus_1',
+        tenantId: 't1',
+        pay: { plan: 'full', billing: 'monthly', kind: 'upgrade' },
+        doneUrl: 'https://app.bohdiai.com/manage/plan/paid?session={CHECKOUT_SESSION_ID}',
+        backUrl: 'https://app.bohdiai.com/manage/plan/change?to=full',
+      }),
+    );
+    expect(pc.changeNow).not.toHaveBeenCalled();
     expect(applyPlan).not.toHaveBeenCalled();
     expect(writes).toEqual([]);
     expect(sendPlanChange).not.toHaveBeenCalled();
   });
 
-  it('Stripe failing changes nothing', async () => {
-    pc.changeNow.mockRejectedValueOnce(new Error('stripe down'));
-    expect((await upgradePlan('full', 'monthly')).ok).toBe(false);
-    pc.findPrice.mockRejectedValueOnce('no price');
-    expect((await upgradePlan('full', 'monthly')).ok).toBe(false);
+  it('a payment page Stripe can’t open changes nothing and says so', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1', customerId: 'cus_1' });
+    pay.startPayPage.mockRejectedValueOnce(new Error('stripe down'));
+    expect(await upgradePlan('full', 'monthly')).toEqual({
+      ok: false,
+      error: 'The plan couldn’t be changed. Try again in a moment.',
+    });
     expect(applyPlan).not.toHaveBeenCalled();
   });
 
-  it('paid but the site couldn’t switch: says the payment went through', async () => {
-    const paid = { ok: false, error: 'Your payment went through. Your site is switching over: refresh in a minute.' };
-    state.apply = { ok: false, error: 'switches: down' };
-    expect(await upgradePlan('full', 'monthly')).toEqual(paid);
-    state.apply = { ok: true };
-    state.writeError = 'down';
-    expect(await upgradePlan('full', 'monthly')).toEqual(paid);
+  it('an amount too small for a card payment goes on the next bill, and the site switches', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1', customerId: 'cus_1' });
+    pay.startPayPage.mockResolvedValueOnce({ kind: 'small', cents: 30 });
+    pc.changeNowBillLater.mockResolvedValueOnce({
+      ok: true,
+      sub: { items: { data: [{ current_period_end: Date.UTC(2026, 10, 29) / 1000 }] } },
+    });
+    expect(await upgradePlan('full', 'monthly')).toEqual({ ok: true });
+    expect(pc.changeNowBillLater).toHaveBeenCalledWith(
+      {},
+      'sub_1',
+      { id: 'price_full_monthly' },
+      { plan: 'full', billing: 'monthly' },
+    );
+    expect(pc.changeNow).not.toHaveBeenCalled();
+    expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'full');
+  });
+
+  describe('back from the payment page', () => {
+    beforeEach(() => {
+      billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1', customerId: 'cus_1' });
+    });
+    it('once paid: the site switches, with Stripe’s renewal day, and the maker is told', async () => {
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?changed=full');
+      expect(pay.finishPayPage).toHaveBeenCalledWith({}, 'cs_1', 't1', 'sub_1');
+      expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'full');
+      expect(writes).toEqual([
+        {
+          plan_billing: 'monthly',
+          plan_renews_on: '2026-11-29',
+          plan_next: null,
+          plan_next_billing: null,
+          plan_next_gallery: null,
+        },
+      ]);
+      expect(sendPlanChange).toHaveBeenCalledWith(
+        expect.objectContaining({ change: { kind: 'upgrade', to: 'Maker Full' } }),
+      );
+    });
+    it('coming back again doesn’t email twice', async () => {
+      pay.finishPayPage.mockResolvedValueOnce({
+        ok: true,
+        already: true,
+        pay: { plan: 'full', billing: 'monthly', kind: 'upgrade' },
+        sub: { items: { data: [] } },
+      });
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?changed=full');
+      expect(sendPlanChange).not.toHaveBeenCalled();
+    });
+    it('not paid, not this site’s, or refused by Stripe: nothing switches, and Your plan says which', async () => {
+      pay.finishPayPage.mockResolvedValueOnce({ ok: false, why: 'unpaid' });
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?paid=not-paid');
+      pay.finishPayPage.mockResolvedValueOnce({ ok: false, why: 'mismatch' });
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?paid=not-done');
+      pay.finishPayPage.mockResolvedValueOnce({ ok: false, why: 'declined' });
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?paid=credit');
+      pay.finishPayPage.mockRejectedValueOnce(new Error('stripe down'));
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?paid=credit');
+      expect(await finishPaidChange('')).toBe('/manage/plan?paid=not-done');
+      expect(applyPlan).not.toHaveBeenCalled();
+      expect(sendPlanChange).not.toHaveBeenCalled();
+    });
+    it('paid but the site couldn’t switch: says the payment went through', async () => {
+      state.apply = { ok: false, error: 'switches: down' };
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?paid=switching');
+      state.apply = { ok: true };
+      state.writeError = 'down';
+      expect(await finishPaidChange('cs_1')).toBe('/manage/plan?paid=switching');
+    });
+    it('a Free site moving up steps onto its plan and goes to the site form', async () => {
+      pay.finishPayPage.mockResolvedValueOnce({
+        ok: true,
+        already: false,
+        pay: { plan: 'lite', billing: 'yearly', kind: 'free' },
+        sub: { items: { data: [{ current_period_end: Date.UTC(2027, 10, 16) / 1000 }] } },
+      });
+      expect(await finishPaidChange('cs_1')).toBe('/welcome');
+      expect(stepUp).toHaveBeenCalledWith(expect.anything(), 't1', 'lite', 'yearly', '2027-11-16');
+    });
   });
 
   it('downgrades at renewal: Stripe holds it, the site says it’s waiting, nothing switches', async () => {
     expect(await scheduleDowngrade('showcase', 'yearly', ['p1'])).toEqual({ ok: true });
-    expect(pc.changeAtRenewal).toHaveBeenCalledWith({}, 'sub_1', { id: 'price_showcase_yearly' }, { plan: 'showcase', billing: 'yearly' });
+    expect(pc.changeAtRenewal).toHaveBeenCalledWith(
+      {},
+      'sub_1',
+      { id: 'price_showcase_yearly' },
+      { plan: 'showcase', billing: 'yearly' },
+    );
     expect(applyPlan).not.toHaveBeenCalled();
-    expect(writes).toEqual([{ plan_billing: 'monthly', plan_renews_on: '2026-11-20', plan_next: 'showcase', plan_next_billing: 'yearly', plan_next_gallery: ['p1'] }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'monthly',
+        plan_renews_on: '2026-11-20',
+        plan_next: 'showcase',
+        plan_next_billing: 'yearly',
+        plan_next_gallery: ['p1'],
+      },
+    ]);
   });
 
   it('a downgrade Stripe can’t hold isn’t saved; one that can’t be saved is let go in Stripe', async () => {
@@ -502,29 +675,65 @@ describe('a site Stripe bills', () => {
     expect(writes).toEqual([]);
   });
 
-  it('monthly to yearly happens now', async () => {
-    expect(await changeBilling('yearly')).toEqual({ ok: true });
-    expect(pc.changeNow).toHaveBeenCalledWith({}, 'sub_1', { id: 'price_lite_yearly' }, { plan: 'lite', billing: 'yearly' });
-    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2026-11-29', plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
-    expect(sendPlanChange).toHaveBeenCalledWith(expect.objectContaining({ change: { kind: 'billing', billing: 'yearly', on: null } }));
+  it('monthly to yearly is paid on Stripe’s own page first, then made on the way back', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1', customerId: 'cus_1' });
+    expect(await redirected(() => changeBilling('yearly'))).toBe(
+      'https://checkout.stripe.com/c/pay/cs_test_1',
+    );
+    expect(pay.startPayPage).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        pay: { plan: 'lite', billing: 'yearly', kind: 'billing' },
+        backUrl: 'https://app.bohdiai.com/manage/plan',
+      }),
+    );
+    expect(writes).toEqual([]);
+    pay.finishPayPage.mockResolvedValueOnce({
+      ok: true,
+      already: false,
+      pay: { plan: 'lite', billing: 'yearly', kind: 'billing' },
+      sub: { items: { data: [{ current_period_end: Date.UTC(2027, 10, 16) / 1000 }] } },
+    });
+    expect(await finishPaidChange('cs_2')).toBe('/manage/plan?changed=billing');
+    expect(applyPlan).not.toHaveBeenCalled();
+    expect(writes).toEqual([
+      {
+        plan_billing: 'yearly',
+        plan_renews_on: '2027-11-16',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_next_gallery: null,
+      },
+    ]);
+    expect(sendPlanChange).toHaveBeenCalledWith(
+      expect.objectContaining({ change: { kind: 'billing', billing: 'yearly', on: null } }),
+    );
   });
 
-  it('monthly to yearly: a declined card, a Stripe failure, or a failed save', async () => {
-    pc.changeNow.mockResolvedValueOnce(declined);
-    expect((await changeBilling('yearly')).ok).toBe(false);
-    pc.changeNow.mockRejectedValueOnce(new Error('down'));
+  it('monthly to yearly: a payment page Stripe can’t open changes nothing', async () => {
+    billing.currentSubscription.mockResolvedValue({ stripeId: 'sub_1', customerId: 'cus_1' });
+    pay.startPayPage.mockRejectedValueOnce(new Error('down'));
     expect((await changeBilling('yearly')).ok).toBe(false);
     expect(writes).toEqual([]);
-    state.writeError = 'down';
-    expect(await changeBilling('yearly')).toEqual({ ok: false, error: 'Your payment went through. Your site is switching over: refresh in a minute.' });
   });
 
   it('yearly to monthly waits for renewal', async () => {
     state.plan = on({ plan: 'lite', billing: 'yearly', renewsOn: '2027-05-01' });
     expect(await changeBilling('monthly')).toEqual({ ok: true });
-    expect(pc.changeAtRenewal).toHaveBeenCalledWith({}, 'sub_1', { id: 'price_lite_monthly' }, { plan: 'lite', billing: 'monthly' });
-    expect(writes).toEqual([{ plan_next: 'lite', plan_next_billing: 'monthly', plan_next_gallery: null }]);
-    expect(sendPlanChange).toHaveBeenCalledWith(expect.objectContaining({ change: { kind: 'billing', billing: 'monthly', on: expect.stringContaining('May 1, 2027') } }));
+    expect(pc.changeAtRenewal).toHaveBeenCalledWith(
+      {},
+      'sub_1',
+      { id: 'price_lite_monthly' },
+      { plan: 'lite', billing: 'monthly' },
+    );
+    expect(writes).toEqual([
+      { plan_next: 'lite', plan_next_billing: 'monthly', plan_next_gallery: null },
+    ]);
+    expect(sendPlanChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        change: { kind: 'billing', billing: 'monthly', on: expect.stringContaining('May 1, 2027') },
+      }),
+    );
   });
 
   it('yearly to monthly: Stripe can’t hold it, or it can’t be saved (then let go)', async () => {
@@ -538,7 +747,10 @@ describe('a site Stripe bills', () => {
 
   it('refuses nonsense and no change at all', async () => {
     expect((await changeBilling('weekly')).ok).toBe(false);
-    expect(await changeBilling('monthly')).toEqual({ ok: false, error: 'Your plan is already billed that way.' });
+    expect(await changeBilling('monthly')).toEqual({
+      ok: false,
+      error: 'Your plan is already billed that way.',
+    });
     state.plan = null;
     expect((await changeBilling('yearly')).ok).toBe(false);
   });
@@ -553,7 +765,15 @@ describe('a site that’s free for this maker', () => {
   it('moves up or down with nothing charged and nothing asked of Stripe', async () => {
     expect(await upgradePlan('full', 'yearly')).toEqual({ ok: true });
     expect(applyPlan).toHaveBeenCalledWith(expect.anything(), 't1', 'full');
-    expect(writes).toEqual([{ plan_billing: 'yearly', plan_renews_on: '2026-11-20', plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
+    expect(writes).toEqual([
+      {
+        plan_billing: 'yearly',
+        plan_renews_on: '2026-11-20',
+        plan_next: null,
+        plan_next_billing: null,
+        plan_next_gallery: null,
+      },
+    ]);
     expect(await scheduleDowngrade('showcase', 'monthly', ['p1'])).toEqual({ ok: true });
     expect(pc.changeNow).not.toHaveBeenCalled();
     expect(pc.changeAtRenewal).not.toHaveBeenCalled();
@@ -562,7 +782,9 @@ describe('a site that’s free for this maker', () => {
 
   it('switches billing straight away, or says so when it can’t', async () => {
     expect(await changeBilling('yearly')).toEqual({ ok: true });
-    expect(writes).toEqual([{ plan_billing: 'yearly', plan_next: null, plan_next_billing: null, plan_next_gallery: null }]);
+    expect(writes).toEqual([
+      { plan_billing: 'yearly', plan_next: null, plan_next_billing: null, plan_next_gallery: null },
+    ]);
     state.writeError = 'down';
     expect((await changeBilling('yearly')).ok).toBe(false);
   });

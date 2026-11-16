@@ -17,13 +17,27 @@
  * A site with none of these (a sample) still goes through Alex.
  */
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import type { Route } from 'next';
+import { headersOrigin } from '@/lib/backend/request-origin';
+import { finishPayPage, startPayPage, type PayFor } from '@/lib/billing/pay-change';
+import { ONBOARDING_PATH } from '@/lib/signup/onboarding';
+import { stepUp } from './free-up';
 import { requireActingSite } from '@/lib/backend/current-site';
 import { getSiteFeatures } from '@/lib/backend/site-features';
 import { supabaseAdmin } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { stripe } from '@/lib/billing/stripe';
 import { currentSubscription, setEndsWithTerm } from '@/lib/billing/maker-subscription';
-import { changeAtRenewal, changeNow, dropAtRenewal, findPrice, whenChange } from '@/lib/billing/plan-change';
+import {
+  changeAtRenewal,
+  changeNow,
+  changeNowBillLater,
+  dropAtRenewal,
+  findPrice,
+  whenChange,
+} from '@/lib/billing/plan-change';
 import { SITE_PLANS } from './plan';
 import { planHow, type PlanHow } from './how';
 import { sendPlanChange, type PlanChange } from './emails';
@@ -33,7 +47,12 @@ import { isSitePlan, type SitePlan } from './plan';
 import { loadPlanState, type PlanState } from './queries';
 import { moveOf } from './plan-features';
 import { applyPlan } from './apply';
-import { galleryFromProducts, galleryToProducts, pickedForShowcase, showcaseCandidates } from './convert';
+import {
+  galleryFromProducts,
+  galleryToProducts,
+  pickedForShowcase,
+  showcaseCandidates,
+} from './convert';
 import { GALLERY_LIMIT } from '../gallery/gallery-form';
 import type { Billing } from './billing';
 import {
@@ -51,9 +70,12 @@ export type ChangePlanResult = { ok: true } | { ok: false; error: string };
 const FAILED = 'The plan couldn’t be changed. Try again in a moment.';
 
 const THROUGH_ALEX = 'This site’s plan is changed by Alex. Use the email button on Your plan.';
-const PAID_SWITCHING = 'Your payment went through. Your site is switching over: refresh in a minute.';
+const PAID_SWITCHING =
+  'Your payment went through. Your site is switching over: refresh in a minute.';
 
-type Ready = { ok: true; tenantId: string; state: PlanState; how: PlanHow } | { ok: false; error: string };
+type Ready =
+  | { ok: true; tenantId: string; state: PlanState; how: PlanHow }
+  | { ok: false; error: string };
 
 /** The acting site, its plan, and how its plan is paid for. */
 async function planSite(): Promise<Ready> {
@@ -62,7 +84,12 @@ async function planSite(): Promise<Ready> {
   if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
   const state = await loadPlanState(supabaseAdmin(), site.tenantId);
   if (state === null) return { ok: false, error: 'This site isn’t on a plan yet.' };
-  return { ok: true, tenantId: site.tenantId, state, how: await planHow(supabaseAdmin(), site.tenantId, on.has('demo_checkout'), state) };
+  return {
+    ok: true,
+    tenantId: site.tenantId,
+    state,
+    how: await planHow(supabaseAdmin(), site.tenantId, on.has('demo_checkout'), state),
+  };
 }
 
 /** The demo's own sums: only the demo works its billing out here. */
@@ -98,7 +125,12 @@ async function writeTerms(
 /** Email the maker (and Alex a copy) about a change that has happened. */
 async function tell(change: PlanChange): Promise<void> {
   const { user, site } = await requireActingSite();
-  await sendPlanChange({ siteName: site.businessName, subdomain: site.subdomain, makerEmail: user.email ?? '', change });
+  await sendPlanChange({
+    siteName: site.businessName,
+    subdomain: site.subdomain,
+    makerEmail: user.email ?? '',
+    change,
+  });
 }
 
 /** Tells Stripe first, so nothing says cancelled while Stripe would still charge. */
@@ -111,7 +143,11 @@ async function tellStripe(tenantId: string, ends: boolean): Promise<boolean> {
     await setEndsWithTerm(stripe(), sub, ends);
     return true;
   } catch (err) {
-    logger.error('plan: Stripe not told', { tenantId, ends, error: err instanceof Error ? err.message : String(err) });
+    logger.error('plan: Stripe not told', {
+      tenantId,
+      ends,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return false;
   }
 }
@@ -124,10 +160,16 @@ export async function cancelAtTermEnd(): Promise<ChangePlanResult> {
   if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
   const state = await loadPlanState(supabaseAdmin(), site.tenantId);
   if (state === null) return { ok: false, error: 'This site isn’t on a plan yet.' };
-  if (!(await tellStripe(site.tenantId, true))) return { ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' };
+  if (!(await tellStripe(site.tenantId, true)))
+    return { ok: false, error: 'Your cancellation couldn’t be saved. Try again in a moment.' };
   const { error } = await supabaseAdmin()
     .from('tenants')
-    .update({ plan_cancels: true, plan_next: null, plan_next_billing: null, plan_next_gallery: null })
+    .update({
+      plan_cancels: true,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_next_gallery: null,
+    })
     .eq('id', site.tenantId);
   if (error !== null) {
     logger.error('plan cancel failed', { tenantId: site.tenantId, error: error.message });
@@ -142,8 +184,12 @@ export async function keepSite(): Promise<ChangePlanResult> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) return { ok: false, error: 'This site isn’t on a plan yet.' };
-  if (!(await tellStripe(site.tenantId, false))) return { ok: false, error: 'That couldn’t be saved. Try again in a moment.' };
-  const { error } = await supabaseAdmin().from('tenants').update({ plan_cancels: false }).eq('id', site.tenantId);
+  if (!(await tellStripe(site.tenantId, false)))
+    return { ok: false, error: 'That couldn’t be saved. Try again in a moment.' };
+  const { error } = await supabaseAdmin()
+    .from('tenants')
+    .update({ plan_cancels: false })
+    .eq('id', site.tenantId);
   if (error !== null) {
     logger.error('plan keep failed', { tenantId: site.tenantId, error: error.message });
     return { ok: false, error: 'That couldn’t be saved. Try again in a moment.' };
@@ -174,28 +220,57 @@ async function switchSite(tenantId: string, from: SitePlan, to: SitePlan): Promi
 
 type Charged = { ok: true; renewsOn: string | null } | { ok: false; error: string };
 
-/** Stripe changes the plan now and charges for it; a declined card changes nothing. */
-async function chargeNow(stripeId: string, to: SitePlan, billing: Billing, tenantId: string): Promise<Charged> {
+/** Stripe changes the plan now and charges for it; a declined card changes nothing.
+ *  `later`: an amount too small for a card payment goes on the next bill instead. */
+async function chargeNow(
+  stripeId: string,
+  to: SitePlan,
+  billing: Billing,
+  tenantId: string,
+  later = false,
+): Promise<Charged> {
   try {
     const s = stripe();
-    const r = await changeNow(s, stripeId, await findPrice(s, to, billing), { plan: to, billing });
-    if (!r.ok) return { ok: false, error: `Your card was declined: ${r.declined} Update your card under Billing, then try again.` };
+    const price = await findPrice(s, to, billing);
+    const r = later
+      ? await changeNowBillLater(s, stripeId, price, { plan: to, billing })
+      : await changeNow(s, stripeId, price, { plan: to, billing });
+    if (!r.ok)
+      return {
+        ok: false,
+        error: `Your card was declined: ${r.declined} Update your card under Billing, then try again.`,
+      };
     const end = r.sub.items.data[0]?.current_period_end;
     return { ok: true, renewsOn: end === undefined ? null : renewalDay(end) };
   } catch (err) {
-    logger.error('plan: Stripe change failed', { tenantId, to, billing, error: err instanceof Error ? err.message : String(err) });
+    logger.error('plan: Stripe change failed', {
+      tenantId,
+      to,
+      billing,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return { ok: false, error: FAILED };
   }
 }
 
 /** Stripe holds the change for the next renewal. */
-async function holdForRenewal(stripeId: string, to: SitePlan, billing: Billing, tenantId: string): Promise<boolean> {
+async function holdForRenewal(
+  stripeId: string,
+  to: SitePlan,
+  billing: Billing,
+  tenantId: string,
+): Promise<boolean> {
   try {
     const s = stripe();
     await changeAtRenewal(s, stripeId, await findPrice(s, to, billing), { plan: to, billing });
     return true;
   } catch (err) {
-    logger.error('plan: Stripe schedule failed', { tenantId, to, billing, error: err instanceof Error ? err.message : String(err) });
+    logger.error('plan: Stripe schedule failed', {
+      tenantId,
+      to,
+      billing,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return false;
   }
 }
@@ -205,9 +280,125 @@ async function letGoOfRenewal(stripeId: string, tenantId: string): Promise<boole
     await dropAtRenewal(stripe(), stripeId);
     return true;
   } catch (err) {
-    logger.error('plan: Stripe schedule not let go', { tenantId, error: err instanceof Error ? err.message : String(err) });
+    logger.error('plan: Stripe schedule not let go', {
+      tenantId,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return false;
   }
+}
+
+/** What the maker sees on Stripe's page for what they're paying. */
+function payLabel(pay: PayFor): string {
+  const name = planOf(pay.plan).name;
+  const period = pay.billing === 'yearly' ? 'year' : 'month';
+  if (pay.kind === 'free') return `BohdiAI ${name} plan, your first ${period}`;
+  if (pay.kind === 'billing') return `BohdiAI ${name} plan, billed yearly from today`;
+  return `BohdiAI ${name} plan, due today for the move up`;
+}
+
+type Opened = { ok: true; url: string | null } | { ok: false; error: string };
+
+/** Stripe's payment page for a change that charges today. url null: the amount is too
+ *  small for a card payment, so the change goes ahead with it on the next bill. */
+async function openPayPage(
+  tenantId: string,
+  stripeId: string,
+  pay: PayFor,
+  backPath: string,
+): Promise<Opened> {
+  try {
+    const sub = await currentSubscription(supabaseAdmin(), tenantId);
+    if (sub === null) return { ok: false, error: FAILED };
+    const origin = headersOrigin(await headers());
+    const page = await startPayPage(stripe(), {
+      stripeId,
+      customerId: sub.customerId,
+      tenantId,
+      pay,
+      label: payLabel(pay),
+      doneUrl: `${origin}/manage/plan/paid?session={CHECKOUT_SESSION_ID}`,
+      backUrl: `${origin}${backPath}`,
+    });
+    return { ok: true, url: page.kind === 'page' ? page.url : null };
+  } catch (err) {
+    logger.error('plan: payment page failed', {
+      tenantId,
+      pay,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, error: FAILED };
+  }
+}
+
+/**
+ * Back from Stripe's payment page (Alex, 2026-11-16). The change is made only for a
+ * paid page for this site; the site then steps onto its plan and the maker is told.
+ * Coming back twice is safe: Stripe isn't asked twice, and the site's own steps can run
+ * again. Returns where to go next.
+ */
+export async function finishPaidChange(session: string): Promise<string> {
+  if (typeof session !== 'string') return '/manage/plan?paid=not-done';
+  const { site } = await requireActingSite();
+  if (!(await getSiteFeatures(site.tenantId)).has('plan')) return '/manage/plan?paid=not-done';
+  const tenantId = site.tenantId;
+  // A Free site has no plan terms yet; only a paid site's are needed below.
+  const state = await loadPlanState(supabaseAdmin(), tenantId);
+  const sub = await currentSubscription(supabaseAdmin(), tenantId);
+  if (sub === null || session === '') return '/manage/plan?paid=not-done';
+  let paid: Awaited<ReturnType<typeof finishPayPage>>;
+  try {
+    paid = await finishPayPage(stripe(), session, tenantId, sub.stripeId);
+  } catch (err) {
+    logger.error('plan: paid change not made', {
+      tenantId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return '/manage/plan?paid=credit';
+  }
+  if (!paid.ok) {
+    if (paid.why === 'declined')
+      logger.error('plan: paid, but Stripe refused the change; the payment is credit', {
+        tenantId,
+      });
+    return `/manage/plan?paid=${paid.why === 'unpaid' ? 'not-paid' : paid.why === 'declined' ? 'credit' : 'not-done'}`;
+  }
+  const { plan, billing, kind } = paid.pay;
+  const end = paid.sub.items.data[0]?.current_period_end;
+  const renewsOn = end === undefined ? (state?.renewsOn ?? '') : renewalDay(end);
+  if (kind === 'free') {
+    const up = await stepUp(
+      supabaseAdmin(),
+      tenantId,
+      plan,
+      billing,
+      renewsOn === '' ? null : renewsOn,
+    );
+    if (!up.ok) return '/manage/plan?up=switching';
+    if (!paid.already) await tell({ kind: 'upgrade', to: planOf(plan).name });
+    return ONBOARDING_PATH;
+  }
+  if (state === null) return '/manage/plan?paid=switching';
+  if (kind === 'upgrade' && state.plan !== plan && !(await switchSite(tenantId, state.plan, plan)))
+    return '/manage/plan?paid=switching';
+  if (
+    !(await writeTerms(tenantId, {
+      plan_billing: billing,
+      plan_renews_on: renewsOn,
+      plan_next: null,
+      plan_next_billing: null,
+      plan_next_gallery: null,
+    }))
+  )
+    return '/manage/plan?paid=switching';
+  if (!paid.already)
+    await tell(
+      kind === 'upgrade'
+        ? { kind: 'upgrade', to: planOf(plan).name }
+        : { kind: 'billing', billing, on: null },
+    );
+  revalidatePath('/manage', 'layout');
+  return kind === 'upgrade' ? `/manage/plan?changed=${plan}` : '/manage/plan?changed=billing';
 }
 
 /** Upgrade now, on `billing`: charged for the rest of the period. Clears any downgrade waiting. */
@@ -222,11 +413,24 @@ export async function upgradePlan(to: unknown, billing: unknown): Promise<Change
   if (how.how === 'alex') return { ok: false, error: THROUGH_ALEX };
 
   if (how.how === 'stripe') {
-    const moved = await chargeNow(how.stripeId, to, billing, tenantId);
+    // Paid on Stripe's own page first (Alex, 2026-11-16); the change is made on the way back.
+    const pay: PayFor = { plan: to, billing, kind: 'upgrade' };
+    const page = await openPayPage(tenantId, how.stripeId, pay, `/manage/plan/change?to=${to}`);
+    if (!page.ok) return page;
+    if (page.url !== null) redirect(page.url as Route);
+    const moved = await chargeNow(how.stripeId, to, billing, tenantId, true);
     if (!moved.ok) return moved;
     // Paid: from here a failure is fixed by Stripe's own notice, which puts the site on its plan.
     if (!(await switchSite(tenantId, state.plan, to))) return { ok: false, error: PAID_SWITCHING };
-    if (!(await writeTerms(tenantId, { plan_billing: billing, plan_renews_on: moved.renewsOn ?? state.renewsOn, plan_next: null, plan_next_billing: null, plan_next_gallery: null })))
+    if (
+      !(await writeTerms(tenantId, {
+        plan_billing: billing,
+        plan_renews_on: moved.renewsOn ?? state.renewsOn,
+        plan_next: null,
+        plan_next_billing: null,
+        plan_next_gallery: null,
+      }))
+    )
       return { ok: false, error: PAID_SWITCHING };
     await tell({ kind: 'upgrade', to: planOf(to).name });
     return done();
@@ -251,7 +455,11 @@ export async function upgradePlan(to: unknown, billing: unknown): Promise<Change
 }
 
 /** Downgrade at the next renewal, billed `billing` from then. Nothing changes until then, and nothing is refunded. */
-export async function scheduleDowngrade(to: unknown, billing: unknown, showcase: unknown = []): Promise<ChangePlanResult> {
+export async function scheduleDowngrade(
+  to: unknown,
+  billing: unknown,
+  showcase: unknown = [],
+): Promise<ChangePlanResult> {
   if (!isSitePlan(to) || !isBilling(billing))
     return { ok: false, error: 'That isn’t one of the plans.' };
   const ready = await planSite();
@@ -268,12 +476,15 @@ export async function scheduleDowngrade(to: unknown, billing: unknown, showcase:
       logger.error('showcase candidates failed', { tenantId, error: found.error });
       return { ok: false, error: FAILED };
     }
-    const ids = Array.isArray(showcase) ? showcase.filter((x): x is string => typeof x === 'string') : [];
+    const ids = Array.isArray(showcase)
+      ? showcase.filter((x): x is string => typeof x === 'string')
+      : [];
     picked = pickedForShowcase(ids, found.products, GALLERY_LIMIT).map((p) => p.id);
     if (picked.length === 0 && found.products.length > 0)
       return { ok: false, error: 'Pick at least one product to show on your Showcase page.' };
   }
-  if (how.how === 'stripe' && !(await holdForRenewal(how.stripeId, to, billing, tenantId))) return { ok: false, error: FAILED };
+  if (how.how === 'stripe' && !(await holdForRenewal(how.stripeId, to, billing, tenantId)))
+    return { ok: false, error: FAILED };
   if (
     !(await writeTerms(tenantId, {
       plan_billing: state.billing,
@@ -302,19 +513,50 @@ export async function changeBilling(billing: unknown): Promise<ChangePlanResult>
   if (when === 'same') return { ok: false, error: 'Your plan is already billed that way.' };
   if (how.how === 'alex' || how.how === 'demo') return { ok: false, error: THROUGH_ALEX };
   if (how.how === 'comp') {
-    if (!(await writeTerms(tenantId, { plan_billing: billing, plan_next: null, plan_next_billing: null, plan_next_gallery: null }))) return { ok: false, error: FAILED };
+    if (
+      !(await writeTerms(tenantId, {
+        plan_billing: billing,
+        plan_next: null,
+        plan_next_billing: null,
+        plan_next_gallery: null,
+      }))
+    )
+      return { ok: false, error: FAILED };
     return done();
   }
   if (when === 'now') {
-    const moved = await chargeNow(how.stripeId, state.plan, billing, tenantId);
+    const page = await openPayPage(
+      tenantId,
+      how.stripeId,
+      { plan: state.plan, billing, kind: 'billing' },
+      '/manage/plan',
+    );
+    if (!page.ok) return page;
+    if (page.url !== null) redirect(page.url as Route);
+    const moved = await chargeNow(how.stripeId, state.plan, billing, tenantId, true);
     if (!moved.ok) return moved;
-    if (!(await writeTerms(tenantId, { plan_billing: billing, plan_renews_on: moved.renewsOn ?? state.renewsOn, plan_next: null, plan_next_billing: null, plan_next_gallery: null })))
+    if (
+      !(await writeTerms(tenantId, {
+        plan_billing: billing,
+        plan_renews_on: moved.renewsOn ?? state.renewsOn,
+        plan_next: null,
+        plan_next_billing: null,
+        plan_next_gallery: null,
+      }))
+    )
       return { ok: false, error: PAID_SWITCHING };
     await tell({ kind: 'billing', billing, on: null });
     return done();
   }
-  if (!(await holdForRenewal(how.stripeId, state.plan, billing, tenantId))) return { ok: false, error: FAILED };
-  if (!(await writeTerms(tenantId, { plan_next: state.plan, plan_next_billing: billing, plan_next_gallery: null }))) {
+  if (!(await holdForRenewal(how.stripeId, state.plan, billing, tenantId)))
+    return { ok: false, error: FAILED };
+  if (
+    !(await writeTerms(tenantId, {
+      plan_next: state.plan,
+      plan_next_billing: billing,
+      plan_next_gallery: null,
+    }))
+  ) {
     await letGoOfRenewal(how.stripeId, tenantId);
     return { ok: false, error: FAILED };
   }
@@ -328,8 +570,15 @@ export async function cancelScheduledChange(): Promise<ChangePlanResult> {
   if (!ready.ok) return ready;
   const { tenantId, state, how } = ready;
   if (how.how === 'alex') return { ok: false, error: THROUGH_ALEX };
-  if (how.how === 'stripe' && !(await letGoOfRenewal(how.stripeId, tenantId))) return { ok: false, error: FAILED };
-  if (!(await writeTerms(tenantId, { plan_next: null, plan_next_billing: null, plan_next_gallery: null })))
+  if (how.how === 'stripe' && !(await letGoOfRenewal(how.stripeId, tenantId)))
+    return { ok: false, error: FAILED };
+  if (
+    !(await writeTerms(tenantId, {
+      plan_next: null,
+      plan_next_billing: null,
+      plan_next_gallery: null,
+    }))
+  )
     return { ok: false, error: FAILED };
   await tell({ kind: 'downgrade-dropped', stays: planOf(state.plan).name });
   return done();
@@ -342,7 +591,12 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
   if (!ready.ok) return ready;
   const { tenantId, state } = ready;
   if (state.next === 'showcase' && state.nextGallery.length > 0) {
-    const g = await galleryFromProducts(supabaseAdmin(), tenantId, state.nextGallery, GALLERY_LIMIT);
+    const g = await galleryFromProducts(
+      supabaseAdmin(),
+      tenantId,
+      state.nextGallery,
+      GALLERY_LIMIT,
+    );
     if (!g.ok) {
       logger.error('showcase gallery failed', { tenantId, error: g.error });
       return { ok: false, error: FAILED };
@@ -359,7 +613,10 @@ export async function skipToRenewal(): Promise<ChangePlanResult> {
   // The demo's clock never moves, so the renewal happens today and the new period starts
   // from today; counting from the old renewal day would leave more than a period ahead.
   const renewsOn = nextRenewal(state.today, billing);
-  const charge = renewalCharge(priceCents(state.next ?? state.plan, billing, state.comp), state.creditCents);
+  const charge = renewalCharge(
+    priceCents(state.next ?? state.plan, billing, state.comp),
+    state.creditCents,
+  );
   if (
     !(await writeTerms(tenantId, {
       plan_billing: billing,

@@ -25,7 +25,8 @@ export async function updateCard(): Promise<CardPageResult> {
   let url: string;
   try {
     const sub = await currentSubscription(supabaseAdmin(), site.tenantId);
-    if (sub === null) return { ok: false, error: 'This site isn’t billed by card. Nothing to update.' };
+    if (sub === null)
+      return { ok: false, error: 'This site isn’t billed by card. Nothing to update.' };
     const origin = headersOrigin(await headers());
     url = await startCardPage(stripe(), {
       customerId: sub.customerId,
@@ -34,7 +35,10 @@ export async function updateCard(): Promise<CardPageResult> {
       backUrl: `${origin}/manage/billing`,
     });
   } catch (err) {
-    logger.error('billing: card page failed', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+    logger.error('billing: card page failed', {
+      tenantId: site.tenantId,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return { ok: false, error: 'Stripe’s card page couldn’t be opened. Try again in a moment.' };
   }
   redirect(url as Route);

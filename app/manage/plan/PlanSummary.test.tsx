@@ -94,7 +94,9 @@ describe('Your plan', () => {
 
   it('says where she is after a change', () => {
     show('lite', DEMO, 'You’re now on Maker Market.');
-    expect(screen.getByText('You’re now on Maker Market.').closest('[role="status"]')).not.toBeNull();
+    expect(
+      screen.getByText('You’re now on Maker Market.').closest('[role="status"]'),
+    ).not.toBeNull();
   });
 
   it('shows billing, renewal and credit, and on the demo the billing switch', () => {
@@ -148,7 +150,9 @@ describe('Your plan', () => {
     ).toBeTruthy();
     expect(screen.queryByRole('link', { name: /Downgrade to/ })).toBeNull();
     // On the demo, a note says what a real site would do and plays the move out now.
-    expect(screen.getByRole('note').textContent).toContain('On a real site, your move to Maker Showcase happens on April 9, 2027, when your plan renews.');
+    expect(screen.getByRole('note').textContent).toContain(
+      'On a real site, your move to Maker Showcase happens on April 9, 2027, when your plan renews.',
+    );
     expect(screen.getByRole('button', { name: 'Move to Maker Showcase now' })).toBeTruthy();
   });
 
@@ -170,26 +174,64 @@ describe('Your plan', () => {
   });
 
   it('a free site says so, and shows the price of any plan it would pay for', () => {
-    render(<PlanSummary view={planView('showcase')} mode={DEMO} terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, nextBilling: null, creditCents: 0, comp: 'showcase' }} />);
+    render(
+      <PlanSummary
+        view={planView('showcase')}
+        mode={DEMO}
+        terms={{
+          billing: 'monthly',
+          renewsOn: '2026-11-09',
+          next: null,
+          nextBilling: null,
+          creditCents: 0,
+          comp: 'showcase',
+        }}
+      />,
+    );
     expect(screen.getByText('Free for you')).toBeTruthy();
     expect(screen.getByText('Nothing to pay.')).toBeTruthy();
     expect(screen.getAllByText('Free for you')).toHaveLength(1);
   });
 
   it('free on every plan marks the plans above as free too', () => {
-    render(<PlanSummary view={planView('showcase')} mode={DEMO} terms={{ billing: 'monthly', renewsOn: '2026-11-09', next: null, nextBilling: null, creditCents: 0, comp: 'free' }} />);
+    render(
+      <PlanSummary
+        view={planView('showcase')}
+        mode={DEMO}
+        terms={{
+          billing: 'monthly',
+          renewsOn: '2026-11-09',
+          next: null,
+          nextBilling: null,
+          creditCents: 0,
+          comp: 'free',
+        }}
+      />,
+    );
     expect(screen.getAllByText('Free for you')).toHaveLength(3);
   });
 });
 
 describe('Your plan on a real site that changes its own plan', () => {
   const SELF: PlanMode = { kind: 'self' };
-  const terms = (over: Record<string, unknown> = {}) => ({ billing: 'monthly' as const, renewsOn: '2026-12-01', next: null, nextBilling: null, creditCents: 0, comp: null, ...over });
+  const terms = (over: Record<string, unknown> = {}) => ({
+    billing: 'monthly' as const,
+    renewsOn: '2026-12-01',
+    next: null,
+    nextBilling: null,
+    creditCents: 0,
+    comp: null,
+    ...over,
+  });
 
   it('upgrades and downgrades go to checkout, never to email', () => {
     render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms()} />);
-    expect(screen.getByRole('link', { name: 'Upgrade to Maker Full' }).getAttribute('href')).toBe('/manage/plan/change?to=full');
-    expect(screen.getByRole('link', { name: 'Downgrade to Maker Showcase' }).getAttribute('href')).toBe('/manage/plan/change?to=showcase');
+    expect(screen.getByRole('link', { name: 'Upgrade to Maker Full' }).getAttribute('href')).toBe(
+      '/manage/plan/change?to=full',
+    );
+    expect(
+      screen.getByRole('link', { name: 'Downgrade to Maker Showcase' }).getAttribute('href'),
+    ).toBe('/manage/plan/change?to=showcase');
     expect(screen.queryByText(/Demo only/)).toBeNull();
   });
 
@@ -199,7 +241,9 @@ describe('Your plan on a real site that changes its own plan', () => {
     screen.getByRole('button', { name: 'Switch to yearly' }).click();
     await vi.waitFor(() => expect(changeBilling).toHaveBeenCalledWith('yearly'));
     unmount();
-    render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms({ billing: 'yearly' })} />);
+    render(
+      <PlanSummary view={planView('lite')} mode={SELF} terms={terms({ billing: 'yearly' })} />,
+    );
     expect(screen.getByText(/when your year ends, on .*December 1, 2026/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Switch to monthly' })).toBeTruthy();
   });
@@ -210,8 +254,16 @@ describe('Your plan on a real site that changes its own plan', () => {
   });
 
   it('a billing switch waiting for renewal says so, and can be undone', () => {
-    render(<PlanSummary view={planView('lite')} mode={SELF} terms={terms({ billing: 'yearly', next: 'lite', nextBilling: 'monthly' })} />);
-    expect(screen.getByRole('heading', { name: /^Billed monthly from .*December 1, 2026$/ })).toBeTruthy();
+    render(
+      <PlanSummary
+        view={planView('lite')}
+        mode={SELF}
+        terms={terms({ billing: 'yearly', next: 'lite', nextBilling: 'monthly' })}
+      />,
+    );
+    expect(
+      screen.getByRole('heading', { name: /^Billed monthly from .*December 1, 2026$/ }),
+    ).toBeTruthy();
     expect(screen.getByText('Until then your yearly plan carries on as it is.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Stay billed yearly' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Switch to/ })).toBeNull();

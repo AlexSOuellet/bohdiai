@@ -12,9 +12,18 @@ import type { Database } from '@/lib/database.types';
 import { currentSubscription } from '@/lib/billing/maker-subscription';
 import type { PlanState } from './queries';
 
-export type PlanHow = { how: 'demo' } | { how: 'comp' } | { how: 'stripe'; stripeId: string } | { how: 'alex' };
+export type PlanHow =
+  | { how: 'demo' }
+  | { how: 'comp' }
+  | { how: 'stripe'; stripeId: string }
+  | { how: 'alex' };
 
-export async function planHow(db: SupabaseClient<Database>, tenantId: string, demo: boolean, state: Pick<PlanState, 'comp'>): Promise<PlanHow> {
+export async function planHow(
+  db: SupabaseClient<Database>,
+  tenantId: string,
+  demo: boolean,
+  state: Pick<PlanState, 'comp'>,
+): Promise<PlanHow> {
   if (demo) return { how: 'demo' };
   if (state.comp === 'free') return { how: 'comp' };
   const sub = await currentSubscription(db, tenantId);

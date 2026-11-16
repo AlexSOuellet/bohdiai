@@ -1,7 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 import { isSitePlan, type SitePlan } from './plan';
-import { isBilling, isPlanComp, nextRenewal, todayDay, type Billing, type PlanComp } from './billing';
+import {
+  isBilling,
+  isPlanComp,
+  nextRenewal,
+  todayDay,
+  type Billing,
+  type PlanComp,
+} from './billing';
 
 export type PlanState = {
   plan: SitePlan;
