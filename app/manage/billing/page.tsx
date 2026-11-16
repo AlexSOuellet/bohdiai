@@ -4,7 +4,11 @@ import { getSiteFeatures } from '@/lib/backend/site-features';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { loadPlanState } from '@/lib/backend/plan/queries';
-import { billingView, stripeBillingView, type StripeBilling } from '@/lib/backend/plan/billing-view';
+import {
+  billingView,
+  stripeBillingView,
+  type StripeBilling,
+} from '@/lib/backend/plan/billing-view';
 import { currentSubscription } from '@/lib/billing/maker-subscription';
 import { stripe } from '@/lib/billing/stripe';
 import { cardOnFile, nextCharge, pastCharges } from '@/lib/billing/card';
@@ -17,7 +21,9 @@ export const dynamic = 'force-dynamic';
 /** Settings → Billing: how the maker pays BohdiAI. A site Stripe bills shows Stripe's own
  *  next charge, the card on file with Stripe's page to change it, and past charges with
  *  their receipts. A free or sample site shows its terms. */
-export default async function BillingPage({ searchParams }: PageProps<'/manage/billing'>): Promise<React.ReactElement> {
+export default async function BillingPage({
+  searchParams,
+}: PageProps<'/manage/billing'>): Promise<React.ReactElement> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) notFound();
@@ -31,16 +37,33 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
   if (sub !== null) {
     try {
       const s = stripe();
-      const [card, next, charges] = await Promise.all([cardOnFile(s, sub.stripeId), nextCharge(s, sub.stripeId), pastCharges(s, sub.customerId)]);
-      billed = stripeBillingView({ card, next, charges, planName: state === null ? 'Free' : billingView(state).planName });
+      const [card, next, charges] = await Promise.all([
+        cardOnFile(s, sub.stripeId),
+        nextCharge(s, sub.stripeId),
+        pastCharges(s, sub.customerId),
+      ]);
+      billed = stripeBillingView({
+        card,
+        next,
+        charges,
+        planName: state === null ? 'Free' : billingView(state).planName,
+      });
     } catch (err) {
-      logger.error('billing: Stripe not read', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+      logger.error('billing: Stripe not read', {
+        tenantId: site.tenantId,
+        error: err instanceof Error ? err.message : String(err),
+      });
       unreadable = true;
     }
   }
   const v = state === null ? null : billingView(state);
   const raw = (await searchParams)['card'];
-  const cardNote = raw === 'updated' ? 'Your new card is saved. It’s the one we charge from now on.' : raw === 'not-updated' ? 'Your card wasn’t changed.' : null;
+  const cardNote =
+    raw === 'updated'
+      ? 'Your new card is saved. It’s the one we charge from now on.'
+      : raw === 'not-updated'
+        ? 'Your card wasn’t changed.'
+        : null;
   return (
     <>
       <div className="bk-head">
@@ -66,7 +89,9 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
           </div>
         )}
         <section className="bk-section" aria-labelledby="s-next">
-          <h2 id="s-next" className="bk-section-title">Your next charge</h2>
+          <h2 id="s-next" className="bk-section-title">
+            Your next charge
+          </h2>
           {v === null ? (
             <p className="bk-note">You’re on Free. Nothing to pay.</p>
           ) : billed !== null ? (
@@ -78,7 +103,9 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
           )}
         </section>
         <section className="bk-section" aria-labelledby="s-card">
-          <h2 id="s-card" className="bk-section-title">How you pay</h2>
+          <h2 id="s-card" className="bk-section-title">
+            How you pay
+          </h2>
           {sub === null ? (
             <p className="bk-note">No card is needed for this site.</p>
           ) : (
@@ -89,7 +116,9 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
           )}
         </section>
         <section className="bk-section" aria-labelledby="s-past">
-          <h2 id="s-past" className="bk-section-title">Past charges</h2>
+          <h2 id="s-past" className="bk-section-title">
+            Past charges
+          </h2>
           {billed === null || billed.charges.length === 0 ? (
             <p className="bk-note">No charges yet.</p>
           ) : (
@@ -99,7 +128,12 @@ export default async function BillingPage({ searchParams }: PageProps<'/manage/b
                   <span>{c.on}</span>
                   <span>{c.amount}</span>
                   {c.receiptUrl !== null && (
-                    <a className="bk-link" href={c.receiptUrl} target="_blank" rel="noopener noreferrer">
+                    <a
+                      className="bk-link"
+                      href={c.receiptUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Receipt
                     </a>
                   )}

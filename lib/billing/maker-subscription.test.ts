@@ -75,9 +75,20 @@ describe('setEndsWithTerm', () => {
       { stripeId: 'sub_1' } as MakerSubscription,
       true,
     );
-    expect(update).toHaveBeenCalledWith('sub_1', { cancel_at_period_end: true, metadata: { close_account: '' } });
+    expect(update).toHaveBeenCalledWith('sub_1', {
+      cancel_at_period_end: true,
+      metadata: { close_account: '' },
+    });
     // Close my account marks it, so the account is removed when the term ends (Alex, 2026-11-16).
-    await setEndsWithTerm({ subscriptions: { update } } as unknown as Stripe, { stripeId: 'sub_1' } as MakerSubscription, true, true);
-    expect(update).toHaveBeenLastCalledWith('sub_1', { cancel_at_period_end: true, metadata: { close_account: 'yes' } });
+    await setEndsWithTerm(
+      { subscriptions: { update } } as unknown as Stripe,
+      { stripeId: 'sub_1' } as MakerSubscription,
+      true,
+      true,
+    );
+    expect(update).toHaveBeenLastCalledWith('sub_1', {
+      cancel_at_period_end: true,
+      metadata: { close_account: 'yes' },
+    });
   });
 });

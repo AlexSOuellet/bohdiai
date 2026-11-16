@@ -10,7 +10,9 @@ import { finishCardPage } from '@/lib/billing/card';
 export const dynamic = 'force-dynamic';
 
 /** Back from Stripe's card page: the new card becomes the one Stripe charges, then Billing says so. */
-export default async function CardDonePage({ searchParams }: PageProps<'/manage/billing/card'>): Promise<never> {
+export default async function CardDonePage({
+  searchParams,
+}: PageProps<'/manage/billing/card'>): Promise<never> {
   const { site } = await requireActingSite();
   const on = await getSiteFeatures(site.tenantId);
   if (!on.has('plan')) notFound();
@@ -20,9 +22,13 @@ export default async function CardDonePage({ searchParams }: PageProps<'/manage/
   if (session !== undefined && session !== '') {
     try {
       const sub = await currentSubscription(supabaseAdmin(), site.tenantId);
-      if (sub !== null && (await finishCardPage(stripe(), session, site.tenantId, sub.stripeId)).ok) outcome = 'updated';
+      if (sub !== null && (await finishCardPage(stripe(), session, site.tenantId, sub.stripeId)).ok)
+        outcome = 'updated';
     } catch (err) {
-      logger.error('billing: card not saved', { tenantId: site.tenantId, error: err instanceof Error ? err.message : String(err) });
+      logger.error('billing: card not saved', {
+        tenantId: site.tenantId,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
   redirect(`/manage/billing?card=${outcome}`);

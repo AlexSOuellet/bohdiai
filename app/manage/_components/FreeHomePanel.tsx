@@ -22,7 +22,9 @@ export function FreeNumbers({ view }: { view: FreeHome }): React.ReactElement {
             {below.length === 0 ? (
               'none'
             ) : (
-              <Link href="/manage/products">{below.length === 1 ? (below[0]?.name ?? '1 product') : `${below.length} products`}</Link>
+              <Link href="/manage/products">
+                {below.length === 1 ? (below[0]?.name ?? '1 product') : `${below.length} products`}
+              </Link>
             )}
           </dd>
         </div>
@@ -32,7 +34,13 @@ export function FreeNumbers({ view }: { view: FreeHome }): React.ReactElement {
 }
 
 /** Showcase's nudge, once she has a few pieces (the ladder, Alex 2026-10-24). */
-export function ReadyToShow({ view, showcasePrice }: { view: FreeHome; showcasePrice: number }): React.ReactElement | null {
+export function ReadyToShow({
+  view,
+  showcasePrice,
+}: {
+  view: FreeHome;
+  showcasePrice: number;
+}): React.ReactElement | null {
   if (view.products < PIECES_READY) return null;
   return (
     <section className="bk-next bk-ready" aria-labelledby="bk-ready">
