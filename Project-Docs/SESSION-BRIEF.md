@@ -1,7 +1,7 @@
 # Session Brief — BohdiAI
 
 > **⚠ START HERE: `Go-Live-Plan.md` is the order to fully live (Session 121, 2026-11-09). Work from its first unticked step; tick each step the moment it's done and live (Alex).**
-> Session 124: read `session-logs/session-123.md`. **Go-Live step 2 done; step 3: terms, Suspend, the locked site record, Report this site all live. Session 124: the check on words and photos skipped (Alex: concerned about choosing what is not ok); step 3 ticked. Next: step 4 (Square online checkout).** The try-the-tools page stays up until Alex says.
+> Session 124: read `session-logs/session-123.md`. **Go-Live step 2 done; step 3: terms, Suspend, the locked site record, Report this site all live. Session 124: the check on words and photos skipped (Alex: concerned about choosing what is not ok); step 3 ticked. Step 4 (Square online checkout) built and live, waiting on Alex's Square notice setup and an end-to-end test with a refund.** The try-the-tools page stays up until Alex says.
 > **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker with Suspend, Promotions, Messages, Reports, Feedback, Emails; new-item counts on the tabs), promotions, the new email look, a cancel that reaches Stripe.
 > **Makers change their own plan (live):** anything charged today is paid on Stripe's own page; cancel moves to Free at term end; Close my account removes everything. **The renewal-day steps need the Stripe webhook live (step 9's first part, Alex).**
 > **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** Act as a maker: search, or see every maker in a list (Alex, 2026-11-15).
@@ -78,6 +78,7 @@
 - **Shop pages' typed routes (Session 115).** The shop is served under `/storefront`, so a redirect to `/account` or `/cart` needs `as Route` or the Cloudflare build fails. Type-check with `.next/types` in and `.next/dev` + `next-env.d.ts` out.
 - **Payments: security first (Alex 2026-10-21).** Never see cards or passwords (the processor's own pages/app), keys scrambled with a secret kept only in Cloudflare, server-only storage, fewest permissions, a sale counts only when the processor confirms it. After a push, check the Workers Builds check run exists, not just CI.
 - **Ask, then stop (Session 123).** A question to Alex ends the turn; don't keep building on the side. Before merging, run every test touching what changed (grep across `app/` too); check a new screen can be reached from the menus.
+- **Open a changed page on the dev server before merging (Session 124).** Tests pass in a pretend browser, so a helper in a `'use client'` file called while the server draws the page passed every test and broke every live cart for about 15 minutes. Plain helpers go in plain files; curl the page (with a Host header) before the merge.
 - **Don't cause side effects Alex didn't ask for.** `seed-editor-test-owner.mjs` resets the password every run — running it "just for the admin row" clobbered his known password. Read what a script does before running it for a narrow purpose.
 
 ---
