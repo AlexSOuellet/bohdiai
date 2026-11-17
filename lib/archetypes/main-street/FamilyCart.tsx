@@ -11,7 +11,8 @@ import type { CartView } from '../content';
 import { fill } from '@/lib/site-words/words';
 import { PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { OrderRequestForm } from '@/lib/storefront/OrderRequestForm';
-import { CheckoutReturned, returnedDone } from '@/lib/storefront/SquarePay';
+import { CheckoutReturned } from '@/lib/storefront/SquarePay';
+import { returnedDone } from '@/lib/storefront/checkout-return';
 import { Type } from './Type';
 import type { FamilyWords } from './words';
 

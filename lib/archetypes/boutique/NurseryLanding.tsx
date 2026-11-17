@@ -33,7 +33,8 @@ import {
   SyncCart,
 } from '@/lib/storefront/CartControls';
 import { NurseryOrderForm } from './NurseryOrderForm';
-import { CheckoutReturned, returnedDone } from '@/lib/storefront/SquarePay';
+import { CheckoutReturned } from '@/lib/storefront/SquarePay';
+import { returnedDone } from '@/lib/storefront/checkout-return';
 import { NurseryMarketBuyer } from './NurseryMarketBuyer';
 import { PhotoViewerProvider, Snapshot } from '@/lib/archetypes/card/PhotoViewer';
 import {
