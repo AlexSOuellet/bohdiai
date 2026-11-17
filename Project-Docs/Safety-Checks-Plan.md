@@ -20,6 +20,8 @@ Drafted 2026-11-16 for Alex's yes. Nothing is built until he says go. Four piece
 
 ## 2. A check on words and photos
 
+**Skipped (Alex, 2026-11-17, Session 124):** concerned about BohdiAI choosing what is not ok. Report this site and Suspend cover it; at launch Alex looks at each new site himself. Kept below in case bad sites start showing up.
+
 **What it does:** Claude (the small, cheap model, the same one Describe it uses) reads the words and looks at the photos against the list above, and answers only "fine" or "held, because …".
 
 **When it runs:**

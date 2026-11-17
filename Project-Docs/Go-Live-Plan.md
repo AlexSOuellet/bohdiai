@@ -29,7 +29,7 @@ Part 1 is what has to be done for that, in the order it gets done. Part 2 is eve
 **Done when:** proven against Stripe's test mode, every direction (up, down, monthly to yearly).
 **Progress (2026-11-09, `feat/plan-changes`, not merged):** paid plans up, down, monthly/yearly, keep my plan, renewal step-down, Billing card and charges built; proven in Stripe test mode on a test clock. Free to a paid plan built too (Alex: "free needs a path to upgrade"): Your plan in Free's menu with every paid plan, monthly or yearly; Stripe's own card page when there's no card; charged the first month or year from that day on the same subscription; then straight to the site form. Free's Home "See the plans" opens it. Billing on Free says nothing to pay. Proven in test mode ($5 charged, a new month from the day of the move). **Changed (Alex, 2026-11-16, Session 122):** "it should NOT do that. what if a maker wants to use a different card?" Anything that charges today (an upgrade, monthly to yearly, Free to a paid plan) now goes to **Stripe's own payment page** for exactly Stripe's figure, where the maker uses the card on file or a different one (the one paid with becomes the card for renewals). The change is made only once the payment is confirmed; the payment is credited first so Stripe's own charge for the change is covered (proven in test mode: a $10 move, $0 extra on the card, nothing on a second run). If anything stops after paying, the money stays as credit for the next bill. Under 50 cents (Stripe's card minimum) goes on the next bill instead. `lib/billing/pay-change.ts`, `/manage/plan/paid`. **Also (Alex, 2026-11-16):** Cancel moves the maker to Free at the end of the term (the site goes offline then; stepping back up brings it back), and **Close my account** (one line under Cancel; type the site's name) removes the site, its files, its site form and the login for good at the end of the term, or at once with nothing paid (`lib/backend/plan/close.ts`). Both renewal-day steps run from Stripe's notices, so they need step 9's webhook live. Merged 2026-11-16.
 
-### [ ] 3. Safety checks before strangers can sign up (Claude builds; you decide the wording)
+### [x] 3. Safety checks before strangers can sign up (Claude builds; you decide the wording)
 **What it is:** once anyone can sign up, someone will eventually put up something illegal, hateful, a scam, or someone else's photos. Today nothing stops that and you have no way to take it down quickly.
 **Today:** bohdiai.com has terms and privacy pages, but they are written for visitors to bohdiai.com, not for makers using the service. There is no terms page a maker agrees to at sign-up, no check on what goes on a site, no way for a visitor to report a site, and no switch to take one down.
 **What gets built:**
@@ -38,7 +38,7 @@ Part 1 is what has to be done for that, in the order it gets done. Part 2 is eve
 - **"Report this site":** a small link in every site's footer that sends you a message.
 - **A suspend switch:** on a maker's page in your admin. One press takes the site offline (the same "temporarily offline" page that exists today) and stops the maker putting it back.
 **Before building:** I bring you the plain list of what each check flags and what the maker sees, and wait for your yes.
-**Progress (2026-11-16, Session 123; plan `Safety-Checks-Plan.md`, Alex: "go"):** maker terms + tick box, Suspend (billing paused, no refunds), Report this site + Reports tab: all done and live. Also found and fixed: a maker's login could change any part of their own site record (now locked). **Left: the check on words and photos.**
+**Progress (2026-11-16, Session 123; plan `Safety-Checks-Plan.md`, Alex: "go"):** maker terms + tick box, Suspend (billing paused, no refunds), Report this site + Reports tab: all done and live. Also found and fixed: a maker's login could change any part of their own site record (now locked). **The check on words and photos is skipped (Alex, 2026-11-17, Session 124: concerned about BohdiAI choosing what is not ok; Report this site and Suspend cover it, and at launch Alex can look at each new site himself). Step 3 done 2026-11-17.**
 
 ### [ ] 4. Makers get paid online with Square (Claude)
 **What it is:** on Full, a shopper fills the cart, presses Pay, and pays on Square's own checkout page. The money goes straight into the maker's Square. BohdiAI never sees the card.
@@ -101,6 +101,7 @@ Not needed for a stranger to sign up and sell. Roughly in order of value.
 
 **Running the business (your admin)**
 - Statistics beyond the dashboard, demo runs and checkups, FAQs and content, reports from "report this site" in one list.
+- The check on words and photos (skipped for launch, Alex 2026-11-17): only if bad sites start showing up. The planned design is in `Safety-Checks-Plan.md`.
 - Error alerts: you hear when something breaks on the live site (Sentry is set up in settings but not installed).
 - The Cloudflare analytics key (you) so makers' visitor numbers show.
 

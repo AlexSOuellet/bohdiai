@@ -1,7 +1,7 @@
 # Session Brief — BohdiAI
 
 > **⚠ START HERE: `Go-Live-Plan.md` is the order to fully live (Session 121, 2026-11-09). Work from its first unticked step; tick each step the moment it's done and live (Alex).**
-> Session 124: read `session-logs/session-123.md`. **Go-Live step 2 done; step 3: terms, Suspend, the locked site record, Report this site all live. Next: the check on words and photos (last of step 3), then step 4 (Square online checkout).** The try-the-tools page stays up until Alex says.
+> Session 124: read `session-logs/session-123.md`. **Go-Live step 2 done; step 3: terms, Suspend, the locked site record, Report this site all live. Session 124: the check on words and photos skipped (Alex: concerned about choosing what is not ok); step 3 ticked. Next: step 4 (Square online checkout).** The try-the-tools page stays up until Alex says.
 > **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker with Suspend, Promotions, Messages, Reports, Feedback, Emails; new-item counts on the tabs), promotions, the new email look, a cancel that reaches Stripe.
 > **Makers change their own plan (live):** anything charged today is paid on Stripe's own page; cancel moves to Free at term end; Close my account removes everything. **The renewal-day steps need the Stripe webhook live (step 9's first part, Alex).**
 > **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** Act as a maker: search, or see every maker in a list (Alex, 2026-11-15).
@@ -30,7 +30,7 @@
 
 ## Next actions
 
-**Session 124:** the check on words and photos (Go-Live step 3's last piece; a flagged item at build stops the site publishing until Alex clears it), then Go-Live step 4. **Session 123 (done):** Go-Live step 2 and three of step 3's four pieces. **Session 122 (done):** Print it, the maker list, the try-the-tools feedback page. **Earlier (Session 121):** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
+**Session 124:** the check on words and photos skipped (Alex); Go-Live step 3 ticked. Next: Go-Live step 4, Square online checkout. **Session 123 (done):** Go-Live step 2 and three of step 3's four pieces. **Session 122 (done):** Print it, the maker list, the try-the-tools feedback page. **Earlier (Session 121):** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
