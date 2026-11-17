@@ -2,7 +2,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 
 vi.mock('@/lib/storefront/CartControls', () => ({ ClearCart: () => <span data-testid="cleared" /> }));
-const { CheckoutReturned, returnedDone } = await import('./SquarePay');
+const { CheckoutReturned } = await import('./SquarePay');
+const { returnedDone } = await import('./checkout-return');
 const { NurseryOrderForm } = await import('@/lib/archetypes/boutique/NurseryOrderForm');
 
 const w = {

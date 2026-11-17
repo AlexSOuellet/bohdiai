@@ -11,6 +11,7 @@ import { useState, type ReactElement } from 'react';
 import type { CheckoutReturn } from '@/lib/archetypes/content';
 import { ClearCart } from '@/lib/storefront/CartControls';
 import { fill } from '@/lib/site-words/words';
+import { returnedDone } from './checkout-return';
 
 /** The site's words for paying through Square (each design keeps them under its own spots). */
 export type SquarePayWords = {
@@ -67,11 +68,6 @@ export function SquarePayButton({ details, w }: { details: () => Record<string, 
       )}
     </>
   );
-}
-
-/** Paid or still being confirmed: the order is placed, so the cart is done with. */
-export function returnedDone(r: CheckoutReturn | undefined): boolean {
-  return r?.kind === 'paid' || r?.kind === 'waiting';
 }
 
 /** What Square said, back from its page. Paid or waiting empties the cart; sold or
