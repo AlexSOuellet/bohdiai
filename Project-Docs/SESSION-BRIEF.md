@@ -1,7 +1,7 @@
 # Session Brief — BohdiAI
 
 > **⚠ START HERE: `Go-Live-Plan.md` is the order to fully live (Session 121, 2026-11-09). Work from its first unticked step; tick each step the moment it's done and live (Alex).**
-> Session 124: read `session-logs/session-123.md`. **Go-Live step 2 done; step 3: terms, Suspend, the locked site record, Report this site all live. Session 124: the check on words and photos skipped (Alex: concerned about choosing what is not ok); step 3 ticked. Step 4 (Square online checkout) built and live, waiting on Alex's Square notice setup and an end-to-end test with a refund.** The try-the-tools page stays up until Alex says.
+> Session 125: read `session-logs/session-124.md`. **Go-Live step 2 done; step 3: terms, Suspend, the locked site record, Report this site all live. Session 124: the check on words and photos skipped (Alex: concerned about choosing what is not ok); step 3 ticked. Step 4 (Square online checkout) built, merged and live; NOT ticked. Pick up from "Where we left off" in `session-logs/session-124.md`: Alex's Square notice setup + two Cloudflare settings + test or real money, then the end-to-end test with a refund (Alex: tomorrow).** The try-the-tools page stays up until Alex says.
 > **Everything is merged and live; `main` is the only branch (`feat/maker-checkup` parked, `fix/auth-link-24h` waits for Alex).** Alex's admin (Dashboard, Invite a maker, Act as a maker with Suspend, Promotions, Messages, Reports, Feedback, Emails; new-item counts on the tabs), promotions, the new email look, a cancel that reaches Stripe.
 > **Makers change their own plan (live):** anything charged today is paid on Stripe's own page; cancel moves to Free at term end; Close my account removes everything. **The renewal-day steps need the Stripe webhook live (step 9's first part, Alex).**
 > **Every email to a maker uses `renderEmail` (`lib/email/layout.ts`); all future emails keep this look (Alex).** Act as a maker: search, or see every maker in a list (Alex, 2026-11-15).
@@ -15,7 +15,7 @@
 **Purpose:** the operational state a fresh session needs to start — current state, next actions, and the standing lessons that carry forward. **Stays under 100 lines.** Detailed per-session recaps live in `session-logs/session-NN.md`. At the end of a session, write the recap there, add a one-line entry to the index at the bottom of this file, and update only the Current State + Next Actions sections here. Do not paste full recaps back.
 **Operative plan doc:** `Project-Docs/Modular-Plan.md`; open items in `Project-Docs/Open-Work.md`. Every session updates Open-Work as items land.
 
-**Last updated:** 2026-11-16, Session 123 (end).
+**Last updated:** 2026-11-17, Session 124 (end).
 
 ---
 
@@ -30,7 +30,7 @@
 
 ## Next actions
 
-**Session 124:** the check on words and photos skipped (Alex); Go-Live step 3 ticked. Next: Go-Live step 4, Square online checkout. **Session 123 (done):** Go-Live step 2 and three of step 3's four pieces. **Session 122 (done):** Print it, the maker list, the try-the-tools feedback page. **Earlier (Session 121):** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
+**Session 124:** the check on words and photos skipped (Alex); Go-Live step 3 ticked; step 4 (Square online checkout) built and live, waiting on Alex's setup and the end-to-end test. Then step 5, Stripe for makers. **Session 123 (done):** Go-Live step 2 and three of step 3's four pieces. **Session 122 (done):** Print it, the maker list, the try-the-tools feedback page. **Earlier (Session 121):** ask Alex about plan changes for real makers, then makers getting paid online: Square online checkout (Open-Work item 6), then Stripe for makers. Still open: the four Free tools, the photo backgrounds tool, a page per plan, the pricing cards, the site form follow-ups (item 58), renaming `site_added_sections`, the Cloudflare analytics key (Alex).
 
 **Every open item is in `Open-Work.md`; follow its Priority order.** Waiting on others: Joe's feedback, Renee's details.
 
@@ -87,9 +87,9 @@
 
 Full recaps live in `session-logs/session-NN.md`. This is the one-line index.
 
+- Session 124 (2026-11-17): **Merged and live: Square online checkout (Square's own page, checked with Square, sold-twice refunds, Refund in Orders); the words-and-photos check skipped. Test with a refund waits on Alex's Square notice setup.** `session-logs/session-124.md`
 - Session 123 (2026-11-16): **Merged and live: makers change their own plan (Stripe's page, cancel to Free, Close my account), maker terms at sign-up, the site record locked, Suspend (billing paused), Report this site, new counts on admin tabs.** `session-logs/session-123.md`
-- Session 122 (2026-11-15): **Merged and live: Print it (Tools tab, every plan), Act as a maker lists every maker, the share-only bohdiai.com/try-the-tools page with a Feedback tab in the admin.** `session-logs/session-122.md`
-- Session 120 (2026-11-04 → 11-06): **Merged and live: PayPal off, Alex's admin, promotions, invites with no time limit, the email look, cancels reach Stripe.** `session-logs/session-120.md`
+- Sessions 120–122 (2026-11-04 → 11-15): **PayPal off, Alex's admin, promotions, invites, the email look, cancels reach Stripe (120); Print it, every maker listed, the try-the-tools page (122).** `session-logs/session-120.md`, `session-122.md`
 - Session 119 (2026-10-31 → 11-03): **Merged and live: self-serve sign-up and pay, the build on its own (Cloudflare Workflow), Publish wherever the site shows, Take my site offline; Square online checkout next.** Full recap: `session-logs/session-119.md`.
 - Sessions 115–118 (2026-10-26 → 10-29): **Buyer accounts (115); backend rebuilt (116); Free, the tools (117); bohdiai.com the maker site, all merged and live (118).** Recaps in `session-logs/`.
 - Sessions 111–114 (2026-10-21 → 10-25): **Market plan live, Square cards, refunds (111); Events area, stock kinds (112); Free plan + ladder + tools decided (113); Rustic Charm & More, Full defined, Getting paid, PayPal test mode, Try on a look (114).** See `session-logs/session-111.md` – `session-114.md`.
