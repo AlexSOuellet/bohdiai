@@ -28,6 +28,8 @@ const w = {
   payCancelled: 'Closed.',
   payUnavailable: 'Can’t load.',
   paid: 'Paid, thank you!',
+  payButton: 'Pay securely',
+  payGoing: 'Taking you to checkout…',
 };
 const fetchMock = vi.fn();
 const json = (status: number, body: unknown): Response => new Response(JSON.stringify(body), { status });
@@ -82,7 +84,7 @@ describe('OrderRequestForm, no online payment', () => {
 });
 
 describe('OrderRequestForm, paying with PayPal', () => {
-  const pay = { clientId: 'client', merchantId: 'M1', currency: 'USD' };
+  const pay = { kind: 'paypal' as const, clientId: 'client', merchantId: 'M1', currency: 'USD' };
   it('shows the PayPal button instead of Send, and never sends an unpaid order on Enter', () => {
     const { container } = render(<OrderRequestForm listingIds={['a']} w={w} honeypot="Company" pay={pay} />);
     expect(screen.getByTestId('paypal')).toBeTruthy();
@@ -103,5 +105,51 @@ describe('OrderRequestForm, paying with PayPal', () => {
     expect(await screen.findByText('Order 1002')).toBeTruthy();
     expect(screen.getByText('Paid, thank you!')).toBeTruthy();
     await waitFor(() => expect(screen.getByTestId('cleared')).toBeTruthy());
+  });
+});
+
+describe('OrderRequestForm, paying through Square', () => {
+  const pay = { kind: 'square' as const };
+  const assign = vi.fn();
+  beforeEach(() => {
+    assign.mockReset();
+    vi.stubGlobal('location', { ...window.location, assign });
+  });
+
+  it('shows Pay instead of Send, and never sends an unpaid order on Enter', () => {
+    const { container } = render(<OrderRequestForm listingIds={['a']} w={w} honeypot="Company" pay={pay} />);
+    expect(screen.getByRole('button', { name: 'Pay securely' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Send order' })).toBeNull();
+    fill();
+    fireEvent.submit(container.querySelector('form') as HTMLFormElement);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('asks for the details first, then goes to Square’s own page', async () => {
+    fetchMock.mockResolvedValue(json(200, { ok: true, url: 'https://sandbox.square.link/u/abc' }));
+    render(<OrderRequestForm listingIds={['a']} code="FIVE" w={w} honeypot="Company" pay={pay} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pay securely' }));
+    expect(fetchMock).not.toHaveBeenCalled();
+    fill();
+    fireEvent.click(screen.getByRole('button', { name: 'Pay securely' }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://sandbox.square.link/u/abc'));
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('/api/checkout/square/create');
+    expect(JSON.parse(String(init.body))).toMatchObject({ listingIds: ['a'], code: 'FIVE', name: 'Pat', email: 'pat@example.com' });
+  });
+
+  it('says why when there’s no page to go to', async () => {
+    fetchMock.mockResolvedValueOnce(json(409, { error: 'Not taking cards.' }));
+    render(<OrderRequestForm listingIds={['a']} w={w} honeypot="Company" pay={pay} />);
+    fill();
+    fireEvent.click(screen.getByRole('button', { name: 'Pay securely' }));
+    expect(await screen.findByText('Not taking cards.')).toBeTruthy();
+    fetchMock.mockResolvedValueOnce(json(200, { ok: true, url: 'http://not-square' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Pay securely' }));
+    expect(await screen.findByText('Didn’t go through.')).toBeTruthy();
+    fetchMock.mockRejectedValueOnce(new Error('offline'));
+    fireEvent.click(screen.getByRole('button', { name: 'Pay securely' }));
+    expect(await screen.findByText('No connection.')).toBeTruthy();
+    expect(assign).not.toHaveBeenCalled();
   });
 });

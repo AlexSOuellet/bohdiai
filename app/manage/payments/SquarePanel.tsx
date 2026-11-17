@@ -10,16 +10,20 @@ import { ConfirmButton } from '../_components/ConfirmButton';
 
 const FAILED = 'Something went wrong. Check your connection and try again.';
 
-/** Cards at a market, through the maker's own Square: connect it, pick which Square
+/** Cards at a market, and (Full) payment for the online shop on Square's own
+ *  checkout page, through the maker's own Square: connect it, pick which Square
  *  location the sales go to, or disconnect. No keys ever reach this screen. */
 export function SquarePanel({
   link,
   ready,
+  online = false,
   outcome,
 }: {
   link: SquareLink | null;
   /** Card payments are set up on BohdiAI (Square's app details are in place). */
   ready: boolean;
+  /** The site has the online shop (Full): its cart pays through this Square too. */
+  online?: boolean;
   /** What happened on the way back from Square's page. */
   outcome: { tone: 'ok' | 'error'; text: string } | null;
 }): React.ReactElement {
@@ -88,6 +92,12 @@ export function SquarePanel({
             tap, insert or type the card there, and the sale is recorded here. The money goes straight to your own Square. BohdiAI never sees a card or your
             Square password, and takes no cut.
           </p>
+          {online && (
+            <p className="bk-note">
+              Your online shop takes payment through it too. A shopper presses Pay in their cart and pays on Square’s own checkout page.
+              The order shows as paid in Orders only once Square confirms the payment.
+            </p>
+          )}
           {!ready && <p className="bk-note">Square isn’t set up on BohdiAI yet, so connecting isn’t open yet.</p>}
           <p className="bk-row">
             <a className="bk-btn" href="/api/square/connect">
@@ -109,7 +119,7 @@ export function SquarePanel({
           {needsLocation && (
             <div className="bk-field">
               <label className="bk-label" htmlFor="sq-location">
-                Which Square location do your market sales go to?
+                Which Square location do your card sales go to?
               </label>
               <select id="sq-location" className="bk-input" value={pick} onChange={(e) => setPick(e.target.value)} disabled={locations === null}>
                 <option value="">{locations === null ? 'Loading your locations…' : 'Pick one'}</option>
@@ -125,6 +135,12 @@ export function SquarePanel({
                 </button>
               </p>
             </div>
+          )}
+          {online && (
+            <p className="bk-note">
+              Your online shop takes payment through this Square: shoppers pay on Square’s own checkout page, and Refund in Orders gives
+              the money back through it.
+            </p>
           )}
           <p className="bk-note">
             Typing a card in by hand works too, in Square’s own screen, when a card won’t tap or read. Square charges a higher fee for a typed-in card.

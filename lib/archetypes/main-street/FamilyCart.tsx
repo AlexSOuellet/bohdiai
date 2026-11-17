@@ -1,7 +1,8 @@
 /**
  * Main Street — the cart (Full), in the family's own chrome and lettering: her
  * pieces priced from the catalog, a discount code when promotions are on, the
- * sums, and the form that sends the order. Nothing is charged. Every word is the
+ * sums, and the form that sends the order (or pays for it, when the shop takes
+ * payment online), and what Square said once the shopper is back from its page. Every word is the
  * site's own (`words.cart`). Class-only: the rules live in chrome's stylesheet
  * under `.ms-cart-*`.
  */
@@ -10,6 +11,7 @@ import type { CartView } from '../content';
 import { fill } from '@/lib/site-words/words';
 import { PromoCodeForm, RemoveFromCartButton, SyncCart } from '@/lib/storefront/CartControls';
 import { OrderRequestForm } from '@/lib/storefront/OrderRequestForm';
+import { CheckoutReturned, returnedDone } from '@/lib/storefront/SquarePay';
 import { Type } from './Type';
 import type { FamilyWords } from './words';
 
@@ -19,11 +21,12 @@ export function FamilyCart({ cart, words }: { cart: CartView; words: FamilyWords
   const blocked = ready.length !== cart.lines.length;
   return (
     <section className="ms-wrap ms-cart">
-      <SyncCart ids={cart.lines.map((l) => l.id)} />
+      {!returnedDone(cart.returned) && <SyncCart ids={cart.lines.map((l) => l.id)} />}
       <Type as="h1" role="closeHead" className="ms-cart-title">
         {C.title}
       </Type>
-      {cart.lines.length === 0 ? (
+      {cart.returned !== undefined && <CheckoutReturned returned={cart.returned} w={C} numberClass="order-num" />}
+      {returnedDone(cart.returned) ? null : cart.lines.length === 0 ? (
         <div className="ms-cart-empty">
           <Type as="p" role="body">
             {C.empty}

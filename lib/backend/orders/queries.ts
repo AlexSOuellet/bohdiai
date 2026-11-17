@@ -12,13 +12,15 @@ export const ORDERS_SHOWN = 200;
 export async function listOrders(db: SupabaseClient<Database>, tenantId: string): Promise<OrderRow[]> {
   const { data, error } = await db
     .from('orders')
-    .select('id, order_number, created_at, status, customer_name, customer_email, customer_phone, customer_note, total_cents, discount_cents, discount_label, source, payment_method, order_items(name_snapshot, unit_price_cents, quantity, created_at)')
+    .select(
+      'id, order_number, created_at, status, customer_name, customer_email, customer_phone, customer_note, total_cents, discount_cents, discount_label, source, payment_method, order_items(name_snapshot, unit_price_cents, quantity, created_at), payments(processor, payment_type, status)',
+    )
     .eq('tenant_id', tenantId)
     .neq('source', 'market_mode')
     .order('created_at', { ascending: false })
     .limit(ORDERS_SHOWN);
   if (error !== null) throw new Error(`Could not load the orders: ${error.message}`);
-  return (data ?? []).map((o) => ({
+  return (data ?? []).filter((o) => !awaitingOnlinePayment(o)).map((o) => ({
     id: o.id,
     number: o.order_number,
     createdAt: o.created_at,
@@ -31,7 +33,12 @@ export async function listOrders(db: SupabaseClient<Database>, tenantId: string)
     via:
       o.source === 'market_mode'
         ? ['At the market', o.payment_method === 'card' ? 'Card' : isPayMethod(o.payment_method) ? METHOD_LABEL[o.payment_method] : null].filter((x) => x !== null).join(' · ')
-        : undefined,
+        : paidOnline(o)
+          ? o.payment_method === 'paypal'
+            ? 'Paid online with PayPal'
+            : 'Paid online by card'
+          : undefined,
+    ...(paidOnline(o) ? { paidOnline: true } : {}),
     discount: o.discount_cents > 0 ? { label: o.discount_label ?? 'Discount', amount: formatPrice(o.discount_cents) } : undefined,
     items: [...o.order_items]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
@@ -42,7 +49,18 @@ export async function listOrders(db: SupabaseClient<Database>, tenantId: string)
 /** How many cart orders are waiting on the owner (status New), for the home screen.
  *  A buyer waiting to pay at a market shows on the market day instead. */
 export async function countNewOrders(db: SupabaseClient<Database>, tenantId: string): Promise<number> {
-  const { count, error } = await db.from('orders').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).neq('source', 'market_mode').eq('status', 'pending');
+  const { data, error } = await db.from('orders').select('status, payments(processor, payment_type, status)').eq('tenant_id', tenantId).neq('source', 'market_mode').eq('status', 'pending');
   if (error !== null) throw new Error(`Could not count the orders: ${error.message}`);
-  return count ?? 0;
+  return (data ?? []).filter((o) => !awaitingOnlinePayment(o)).length;
+}
+
+/** Paid through the shop's own Square or PayPal (a charge the processor confirmed). */
+function paidOnline(o: { payments: readonly { processor: string; payment_type: string; status: string }[] }): boolean {
+  return o.payments.some((p) => (p.processor === 'square' || p.processor === 'paypal' || p.processor === 'stripe') && p.payment_type === 'charge' && p.status === 'succeeded');
+}
+
+/** A shopper went to pay online and hasn't (yet): not an order until the
+ *  processor confirms the payment, so it isn't shown or counted. */
+export function awaitingOnlinePayment(o: { status: string; payments: readonly { processor: string; payment_type: string; status: string }[] }): boolean {
+  return o.status === 'pending' && o.payments.some((p) => p.processor !== 'manual' && p.payment_type === 'charge' && p.status === 'pending');
 }

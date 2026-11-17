@@ -3,12 +3,15 @@
 /**
  * Boutique, nursery design — the cart's "send your order" form. Posts the cart's
  * pieces and the shopper's details to /api/order-request; nothing is charged.
+ * When the shop takes payment through its own Square (`square`), the same details
+ * go with the Pay button to Square's own checkout page instead.
  * On success the cart empties and the order number shows. Every failure says so.
  */
-import { useState, type FormEvent, type ReactElement } from 'react';
+import { useRef, useState, type FormEvent, type ReactElement } from 'react';
 import { ClearCart } from '@/lib/storefront/CartControls';
 import { fill } from '@/lib/site-words/words';
 import type { NurseryWords } from './words';
+import { SquarePayButton } from '@/lib/storefront/SquarePay';
 
 type State =
   | { kind: 'idle' }
@@ -20,15 +23,37 @@ export function NurseryOrderForm({
   listingIds,
   w,
   code = null,
+  square = false,
 }: {
   listingIds: string[];
   w: NurseryWords['cart'];
   code?: string | null;
+  /** The shop takes payment through its own Square. */
+  square?: boolean;
 }): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
+  const formRef = useRef<HTMLFormElement>(null);
+
+  /** The order's details from the form, or null after the browser shows what's missing. */
+  function details(): Record<string, unknown> | null {
+    const form = formRef.current;
+    if (form === null || !form.reportValidity()) return null;
+    const data = new FormData(form);
+    return {
+      listingIds,
+      code: code ?? '',
+      name: data.get('name'),
+      email: data.get('email'),
+      phone: data.get('phone') ?? '',
+      note: data.get('note') ?? '',
+      company: data.get('company') ?? '',
+    };
+  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
+    // Paying online, the order only goes through the Pay button (Enter never sends it unpaid).
+    if (square) return;
     const data = new FormData(e.currentTarget);
     setState({ kind: 'sending' });
     try {
@@ -69,7 +94,7 @@ export function NurseryOrderForm({
   }
 
   return (
-    <form className="bc-form" onSubmit={onSubmit}>
+    <form className="bc-form" onSubmit={onSubmit} ref={formRef}>
       <div className="bc-form__row">
         <label>
           {w.name}
@@ -92,9 +117,13 @@ export function NurseryOrderForm({
         {w.honeypot}
         <input name="company" tabIndex={-1} autoComplete="off" />
       </label>
-      <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>
-        {state.kind === 'sending' ? w.sending : w.send}
-      </button>
+      {square ? (
+        <SquarePayButton details={details} w={w} />
+      ) : (
+        <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>
+          {state.kind === 'sending' ? w.sending : w.send}
+        </button>
+      )}
       {state.kind === 'error' && (
         <p className="bc-form__status" role="alert">
           {state.message}

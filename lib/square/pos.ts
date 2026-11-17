@@ -44,9 +44,11 @@ export function squareHandOff(args: {
   locationId: string | null;
   state: string;
   fallbackUrl: string;
+  /** The shop's currency (USD, CAD). */
+  currency: string;
 }): SquareHandOff {
   const data = {
-    amount_money: { amount: String(args.totalCents), currency_code: 'USD' },
+    amount_money: { amount: String(args.totalCents), currency_code: args.currency },
     callback_url: args.callbackUrl,
     client_id: args.applicationId,
     version: '1.3',
@@ -66,7 +68,7 @@ export function squareHandOff(args: {
     extra('S.com.squareup.pos.CLIENT_ID', args.applicationId),
     'S.com.squareup.pos.API_VERSION=v2.0',
     `i.com.squareup.pos.TOTAL_AMOUNT=${args.totalCents}`,
-    'S.com.squareup.pos.CURRENCY_CODE=USD',
+    `S.com.squareup.pos.CURRENCY_CODE=${args.currency}`,
     'S.com.squareup.pos.TENDER_TYPES=com.squareup.pos.TENDER_CARD',
     // Back to the market app on its own once the sale is done (Android waits on its
     // Done screen otherwise, and the sale is never recorded). Square allows 3.2 to 10 s.
@@ -140,12 +142,12 @@ export function reasonWords(code: string): string {
 }
 
 /** Square's card sale matches what the market app sent: completed, the same total,
- *  in dollars, at the maker's location, and paid by card. */
+ *  in the shop's currency, at the maker's location, and paid by card. */
 export function saleMatches(
   sale: { state: string; totalCents: number; currency: string; locationId: string; payments: { type: string; amountCents: number }[] },
-  expect: { totalCents: number; locationId: string | null },
+  expect: { totalCents: number; locationId: string | null; currency: string },
 ): boolean {
-  if (sale.state !== 'COMPLETED' || sale.currency !== 'USD' || sale.totalCents !== expect.totalCents) return false;
+  if (sale.state !== 'COMPLETED' || sale.currency.toUpperCase() !== expect.currency.toUpperCase() || sale.totalCents !== expect.totalCents) return false;
   if (expect.locationId !== null && sale.locationId !== expect.locationId) return false;
   const card = sale.payments.filter((p) => p.type === 'CARD').reduce((n, p) => n + p.amountCents, 0);
   return card === expect.totalCents;

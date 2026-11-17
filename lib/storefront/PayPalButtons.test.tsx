@@ -4,7 +4,7 @@ import { PayPalButtons } from './PayPalButtons';
 
 type Options = Parameters<NonNullable<Window['paypal']>['Buttons']>[0];
 
-const pay = { clientId: 'client', merchantId: 'M1', currency: 'USD' };
+const pay = { kind: 'paypal' as const, clientId: 'client', merchantId: 'M1', currency: 'USD' };
 const w = { paying: 'Finishing…', payError: 'Didn’t go through.', payCancelled: 'You closed PayPal.', payUnavailable: 'Can’t load.', errorNetwork: 'No connection.' };
 let opts: Options | null;
 const close = vi.fn(async () => undefined);

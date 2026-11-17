@@ -21,7 +21,7 @@ describe('authorizeUrl', () => {
   it('asks for the fewest permissions and a fresh sign-in', () => {
     const u = new URL(authorizeUrl(config, 'st'));
     expect(u.origin).toBe('https://connect.squareup.com');
-    expect(u.searchParams.get('scope')).toBe('MERCHANT_PROFILE_READ ORDERS_READ PAYMENTS_READ');
+    expect(u.searchParams.get('scope')).toBe('MERCHANT_PROFILE_READ ORDERS_READ PAYMENTS_READ ORDERS_WRITE PAYMENTS_WRITE');
     expect(u.searchParams.get('session')).toBe('false');
     expect(u.searchParams.get('state')).toBe('st');
   });
@@ -72,7 +72,7 @@ describe('reads', () => {
       'ORD',
       answer(200, { order: { id: 'ORD', location_id: 'L1', state: 'COMPLETED', total_money: { amount: 4250, currency: 'USD' }, tenders: [{ payment_id: 'P1', type: 'CARD', amount_money: { amount: 4250 } }] } }),
     );
-    expect(sale).toEqual({ orderId: 'ORD', locationId: 'L1', state: 'COMPLETED', totalCents: 4250, currency: 'USD', payments: [{ id: 'P1', amountCents: 4250, type: 'CARD' }] });
+    expect(sale).toEqual({ orderId: 'ORD', locationId: 'L1', state: 'COMPLETED', totalCents: 4250, currency: 'USD', payments: [{ id: 'P1', amountCents: 4250, type: 'CARD' }], referenceId: '', dueCents: 4250 });
     expect(await findSale(config, 'A', 'NOPE', answer(404, { errors: [{ code: 'NOT_FOUND' }] }))).toBeNull();
   });
 });

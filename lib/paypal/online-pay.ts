@@ -7,17 +7,17 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
-import type { OnlinePay } from '@/lib/archetypes/content';
+import type { PayPalPay } from '@/lib/archetypes/content';
 import { loadSiteFeatures } from '@/lib/backend/features';
 import { paypalConfig } from './config';
 import { paidInto } from './connection';
 
-export async function onlinePay(db: SupabaseClient<Database>, tenantId: string): Promise<OnlinePay | null> {
+export async function paypalPay(db: SupabaseClient<Database>, tenantId: string): Promise<PayPalPay | null> {
   const config = paypalConfig();
   if (config === null || !(await loadSiteFeatures(db, tenantId)).has('cart')) return null;
   const merchantId = await paidInto(db, tenantId);
   if (merchantId === null) return null;
   const { data, error } = await db.from('tenants').select('currency').eq('id', tenantId).maybeSingle();
   if (error !== null) throw new Error(`Could not read the shop's currency: ${error.message}`);
-  return { clientId: config.clientId, merchantId, currency: (data?.currency || 'USD').toUpperCase() };
+  return { kind: 'paypal', clientId: config.clientId, merchantId, currency: (data?.currency || 'USD').toUpperCase() };
 }

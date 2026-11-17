@@ -10,7 +10,7 @@
  * unless capture succeeds.
  */
 import { useEffect, useRef, useState, type ReactElement } from 'react';
-import type { OnlinePay } from '@/lib/archetypes/content';
+import type { PayPalPay } from '@/lib/archetypes/content';
 
 type PayPalActions = { reject: () => Promise<void>; resolve: () => Promise<void> };
 type PayPalNamespace = {
@@ -31,12 +31,12 @@ declare global {
 }
 
 /** PayPal's script for this shop's account and currency (one per page). */
-function sdkUrl(pay: OnlinePay): string {
+function sdkUrl(pay: PayPalPay): string {
   const q = new URLSearchParams({ 'client-id': pay.clientId, 'merchant-id': pay.merchantId, currency: pay.currency, intent: 'capture', components: 'buttons' });
   return `https://www.paypal.com/sdk/js?${q.toString()}`;
 }
 
-function loadSdk(pay: OnlinePay): Promise<PayPalNamespace> {
+function loadSdk(pay: PayPalPay): Promise<PayPalNamespace> {
   if (window.paypal !== undefined) return Promise.resolve(window.paypal);
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -56,7 +56,7 @@ export function PayPalButtons({
   w,
   onPaid,
 }: {
-  pay: OnlinePay;
+  pay: PayPalPay;
   /** The shopper's details from the form, or null (after showing what's missing) when they aren't filled in right. */
   details: () => Record<string, unknown> | null;
   w: PayWords;

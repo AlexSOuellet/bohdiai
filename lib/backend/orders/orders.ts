@@ -55,8 +55,11 @@ export type OrderRow = {
   phone: string;
   note: string;
   total: string;
-  /** "At the market · Venmo" for a market sale; absent for an online order. */
+  /** "At the market · Venmo" for a market sale, "Paid online by card" for one paid
+   *  through the shop's Square or PayPal; absent for an order request. */
   via?: string | undefined;
+  /** Paid online: Refund gives the money back through that processor. */
+  paidOnline?: boolean | undefined;
   /** Money off and what gave it (a code, or the sale's name); absent when none. */
   discount?: { label: string; amount: string } | undefined;
   items: { name: string; price: string }[];

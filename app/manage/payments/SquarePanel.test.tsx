@@ -48,7 +48,7 @@ describe('SquarePanel', () => {
     squareLocations.mockResolvedValue({ ok: true, locations: [{ id: 'L1', name: 'Shop' }, { id: 'L2', name: 'Market booth' }] });
     chooseSquareLocation.mockResolvedValue({ ok: true });
     render(<SquarePanel link={{ ...linked, locationId: null, locationName: '' }} ready outcome={null} />);
-    const select = await screen.findByLabelText('Which Square location do your market sales go to?');
+    const select = await screen.findByLabelText('Which Square location do your card sales go to?');
     await screen.findByRole('option', { name: 'Market booth' });
     fireEvent.change(select, { target: { value: 'L2' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));

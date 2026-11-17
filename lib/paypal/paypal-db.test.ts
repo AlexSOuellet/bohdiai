@@ -33,7 +33,7 @@ const db = () =>
   }) as never;
 
 const { paypalLink, paidInto, saveConnection, dropConnection } = await import('./connection');
-const { onlinePay } = await import('./online-pay');
+const { paypalPay } = await import('./online-pay');
 
 const fail = { data: null, error: { message: 'down' } };
 const row = { merchant_id: 'M1', email: 'renee@example.com', payments_receivable: true, email_confirmed: true, connected_at: '2026-10-25T10:00:00Z' };
@@ -80,29 +80,29 @@ describe('the connection', () => {
   });
 });
 
-describe('onlinePay', () => {
+describe('paypalPay', () => {
   it('gives the PayPal button the public app ID, her account and the shop’s currency', async () => {
     state.queue.push({ data: row, error: null }, { data: { currency: 'cad' }, error: null });
-    expect(await onlinePay(db(), 't1')).toEqual({ clientId: 'client', merchantId: 'M1', currency: 'CAD' });
+    expect(await paypalPay(db(), 't1')).toEqual({ kind: 'paypal', clientId: 'client', merchantId: 'M1', currency: 'CAD' });
   });
   it('falls back to US dollars when the shop has none set', async () => {
     state.queue.push({ data: row, error: null }, { data: { currency: '' }, error: null });
-    expect((await onlinePay(db(), 't1'))?.currency).toBe('USD');
+    expect((await paypalPay(db(), 't1'))?.currency).toBe('USD');
     state.queue.push({ data: row, error: null }, { data: null, error: null });
-    expect((await onlinePay(db(), 't1'))?.currency).toBe('USD');
+    expect((await paypalPay(db(), 't1'))?.currency).toBe('USD');
   });
   it('is off when PayPal isn’t set up, the cart is off, or her PayPal can’t take orders', async () => {
     state.env = {};
-    expect(await onlinePay(db(), 't1')).toBeNull();
+    expect(await paypalPay(db(), 't1')).toBeNull();
     state.env = { ...ENV };
     state.features = new Set();
-    expect(await onlinePay(db(), 't1')).toBeNull();
+    expect(await paypalPay(db(), 't1')).toBeNull();
     state.features = new Set(['cart']);
     state.queue.push({ data: null, error: null });
-    expect(await onlinePay(db(), 't1')).toBeNull();
+    expect(await paypalPay(db(), 't1')).toBeNull();
   });
   it('fails loudly when the shop can’t be read', async () => {
     state.queue.push({ data: row, error: null }, fail);
-    await expect(onlinePay(db(), 't1')).rejects.toThrow('currency');
+    await expect(paypalPay(db(), 't1')).rejects.toThrow('currency');
   });
 });

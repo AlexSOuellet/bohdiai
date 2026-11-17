@@ -13,7 +13,7 @@ import { cartLine, type LoadedPiece } from './order-request';
 import { cartEntry, splitEntry } from './cart';
 import { bestDiscount, checkCode, runningSale, salePriceCents, type Promotion } from './promotions';
 import { loadShopPromotions } from './promotions-load';
-import { onlinePay } from '@/lib/paypal/online-pay';
+import { onlinePay } from '@/lib/storefront/online-pay';
 
 export function toCartView(
   loaded: readonly LoadedPiece[],

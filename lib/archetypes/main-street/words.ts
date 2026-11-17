@@ -142,6 +142,12 @@ export const FAMILY_WORD_SPOTS = {
     payCancelled: '',
     payUnavailable: '',
     paid: '',
+    /** Paying through the shop's own Square (Full): the Pay button, while it opens Square's page, and back from it ("{n}" is the order number): not confirmed yet, the piece had sold so the money went back, or Square's order didn't match. */
+    payButton: '',
+    payGoing: '',
+    payWaiting: '',
+    paySold: '',
+    payProblem: '',
     honeypot: '',
     was: '',
   },
