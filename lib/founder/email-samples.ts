@@ -7,12 +7,29 @@ import { planChangeEmail } from '@/lib/backend/plan/emails';
 import type { IntakeWords } from '@/lib/intake/queries';
 import { composeReadyEmail } from '@/lib/intake/ready-email';
 import { composeConfirmEmail } from '@/lib/signup/confirm-email';
+import { paidOrderEmail, soldTwiceEmail, type PaidOrderFacts } from '@/lib/square/online-emails';
 import { discountEmail, freeEmail } from './invites';
 
 export type EmailSample = { title: string; subject: string; html: string };
 
 const LINK = 'https://app.bohdiai.com/signin';
 const BUSINESS = 'Juniper Ridge Pottery';
+
+const ORDER: PaidOrderFacts = {
+  shopName: BUSINESS,
+  orderNumber: '1042',
+  name: 'Robin Hale',
+  email: 'robin@example.com',
+  phone: '401-555-0142',
+  note: 'It’s a birthday present, so no price tag please.',
+  lines: [
+    { name: 'Speckled serving bowl', cents: 6800 },
+    { name: 'Pair of mugs', cents: 4200 },
+  ],
+  discount: { label: 'SPRING10', cents: 1100 },
+  totalCents: 9900,
+  ordersUrl: 'https://app.bohdiai.com/manage/orders',
+};
 
 export function emailSamples(words: IntakeWords, assetBase: string): EmailSample[] {
   const code = {
@@ -102,6 +119,8 @@ export function emailSamples(words: IntakeWords, assetBase: string): EmailSample
       ),
     ],
     ['Site back from suspended', planChangeEmail(BUSINESS, { kind: 'unsuspended' }, assetBase)],
+    ['Paid order (Square, online shop)', paidOrderEmail(ORDER, assetBase)],
+    ['Refunded: it had already sold (Square, online shop)', soldTwiceEmail(ORDER, assetBase)],
   ];
   return samples.map(([title, mail]) => ({ title, subject: mail.subject, html: mail.html }));
 }

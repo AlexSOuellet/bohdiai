@@ -23,6 +23,9 @@ const SAVED: Readonly<Record<OrderStatus, string>> = {
   refunded: 'Refund recorded. Those pieces are back in stock. Give the money back the way it was paid.',
 };
 
+/** A refund of an order paid online: the money already went back. */
+const REFUNDED_ONLINE = 'Refunded. The money is on its way back to them, the way they paid. Those pieces are back in stock.';
+
 /** Orders: what shoppers sent from the cart, newest first, each with the buyer's
  *  details and a button per next step; a paid order has Refund (a yes first).
  *  "Open" (new + paid) is the default view. Market sales are under Events, Sales. */
@@ -42,7 +45,7 @@ export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; time
       const r = await setOrderStatus(id, to);
       if (r.ok) {
         setOrders((list) => list.map((o) => (o.id === id ? { ...o, status: to } : o)));
-        notice.showSaved(SAVED[to]);
+        notice.showSaved(to === 'refunded' && orders.find((o) => o.id === id)?.paidOnline === true ? REFUNDED_ONLINE : SAVED[to]);
       } else notice.showError(r.error);
     } catch (err) {
       unstable_rethrow(err);
@@ -67,8 +70,9 @@ export function OrdersManager({ initial, timeZone }: { initial: OrderRow[]; time
             What shoppers sent
           </h2>
           <p className="bk-note">
-            Nothing is charged when someone sends an order. Reply to them to arrange payment and how they get it, then mark it
-            paid here. Marking it paid shows those pieces as sold on your site.
+            An order paid online says so, and the money is already in your account. For any other order nothing is charged: reply
+            to them to arrange payment and how they get it, then mark it paid here. Marking it paid shows those pieces as sold on
+            your site.
           </p>
           <div className="bk-filters">
             <label className="bk-label" htmlFor="orders-show">

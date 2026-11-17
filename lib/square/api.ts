@@ -105,12 +105,26 @@ export type SquareSale = {
   totalCents: number;
   currency: string;
   payments: { id: string; amountCents: number; type: string }[];
+  /** Our own order's ID, on an order BohdiAI made for Square's checkout page ('' otherwise). */
+  referenceId: string;
+  /** What's still owed on it (0 once it's paid in full). */
+  dueCents: number;
 };
 
-/** The order behind a sale the Square app took (its transaction ID is the order's ID). */
+type Money = { amount?: number; currency?: string };
+
+/** The order behind a sale the Square app took (its transaction ID is the order's
+ *  ID), or behind a Square checkout page. */
 export async function findSale(config: SquareConfig, token: string, orderId: string, fetcher: Fetcher = fetch): Promise<SquareSale | null> {
-  type Money = { amount?: number; currency?: string };
-  type Order = { id?: string; location_id?: string; state?: string; total_money?: Money; tenders?: { payment_id?: string; id?: string; type?: string; amount_money?: Money }[] };
+  type Order = {
+    id?: string;
+    location_id?: string;
+    state?: string;
+    reference_id?: string;
+    total_money?: Money;
+    net_amount_due_money?: Money;
+    tenders?: { payment_id?: string; id?: string; type?: string; amount_money?: Money }[];
+  };
   let body: { order?: Order };
   try {
     body = await call<{ order?: Order }>(fetcher, `${squareBase(config)}/v2/orders/${encodeURIComponent(orderId)}`, { method: 'GET', headers: authed(token) });
@@ -127,5 +141,87 @@ export async function findSale(config: SquareConfig, token: string, orderId: str
     totalCents: o.total_money?.amount ?? 0,
     currency: o.total_money?.currency ?? '',
     payments: (o.tenders ?? []).map((t) => ({ id: t.payment_id ?? t.id ?? '', amountCents: t.amount_money?.amount ?? 0, type: t.type ?? '' })),
+    referenceId: o.reference_id ?? '',
+    dueCents: o.net_amount_due_money?.amount ?? o.total_money?.amount ?? 0,
   };
+}
+
+/** What the shopper pays for on Square's checkout page: our order, line by line,
+ *  at the prices our server worked out, with any money off. */
+export type CheckoutOrder = {
+  /** Our own order's ID: Square keeps it on its order, and every step checks it. */
+  referenceId: string;
+  locationId: string;
+  currency: string;
+  lines: readonly { name: string; cents: number }[];
+  discount: { name: string; cents: number } | null;
+  /** Where Square sends the shopper once they've paid. */
+  redirectUrl: string;
+  buyerEmail: string;
+  /** Shown in the maker's Square beside the payment. */
+  note: string;
+};
+
+export type PaymentLink = { url: string; orderId: string; totalCents: number; currency: string };
+
+/** A Square checkout page for exactly this order, in the maker's own Square. No
+ *  tips and no taxes added by Square: the shopper can change only how they pay. */
+export async function createPaymentLink(config: SquareConfig, token: string, order: CheckoutOrder, fetcher: Fetcher = fetch): Promise<PaymentLink> {
+  const money = (cents: number): Money => ({ amount: cents, currency: order.currency });
+  type Made = { payment_link?: { url?: string; order_id?: string }; related_resources?: { orders?: { id?: string; total_money?: Money }[] } };
+  const body = await call<Made>(fetcher, `${squareBase(config)}/v2/online-checkout/payment-links`, {
+    method: 'POST',
+    headers: authed(token),
+    body: JSON.stringify({
+      idempotency_key: `checkout-${order.referenceId}`,
+      order: {
+        location_id: order.locationId,
+        reference_id: order.referenceId,
+        line_items: order.lines.map((l) => ({ name: l.name.slice(0, 500), quantity: '1', base_price_money: money(l.cents) })),
+        ...(order.discount === null ? {} : { discounts: [{ uid: 'off', name: order.discount.name.slice(0, 255), amount_money: money(order.discount.cents), scope: 'ORDER' }] }),
+      },
+      checkout_options: { redirect_url: order.redirectUrl, allow_tipping: false, ask_for_shipping_address: false },
+      ...(order.buyerEmail === '' ? {} : { pre_populated_data: { buyer_email: order.buyerEmail } }),
+      payment_note: order.note.slice(0, 500),
+    }),
+  });
+  const link = body.payment_link;
+  if (!link?.url || !link.order_id) throw new SquareError('Square sent back an incomplete checkout page', 502);
+  const made = (body.related_resources?.orders ?? []).find((o) => o.id === link.order_id);
+  return { url: link.url, orderId: link.order_id, totalCents: made?.total_money?.amount ?? -1, currency: made?.total_money?.currency ?? '' };
+}
+
+/** One payment, as Square has it. */
+export type SquarePayment = { id: string; status: string; amountCents: number; currency: string; orderId: string; locationId: string };
+
+export async function findPayment(config: SquareConfig, token: string, paymentId: string, fetcher: Fetcher = fetch): Promise<SquarePayment | null> {
+  type Payment = { id?: string; status?: string; amount_money?: Money; order_id?: string; location_id?: string };
+  let body: { payment?: Payment };
+  try {
+    body = await call<{ payment?: Payment }>(fetcher, `${squareBase(config)}/v2/payments/${encodeURIComponent(paymentId)}`, { method: 'GET', headers: authed(token) });
+  } catch (err) {
+    if (err instanceof SquareError && err.status === 404) return null;
+    throw err;
+  }
+  const p = body.payment;
+  if (!p?.id) return null;
+  return { id: p.id, status: p.status ?? '', amountCents: p.amount_money?.amount ?? 0, currency: p.amount_money?.currency ?? '', orderId: p.order_id ?? '', locationId: p.location_id ?? '' };
+}
+
+/** Give a payment's money back, in full. The key makes a second try the same
+ *  refund, never a second one (Square allows 45 characters). Returns Square's refund ID. */
+export async function refundPayment(
+  config: SquareConfig,
+  token: string,
+  args: { paymentId: string; cents: number; currency: string; key: string; reason: string },
+  fetcher: Fetcher = fetch,
+): Promise<string> {
+  const body = await call<{ refund?: { id?: string; status?: string } }>(fetcher, `${squareBase(config)}/v2/refunds`, {
+    method: 'POST',
+    headers: authed(token),
+    body: JSON.stringify({ idempotency_key: args.key.slice(0, 45), payment_id: args.paymentId, amount_money: { amount: args.cents, currency: args.currency }, reason: args.reason.slice(0, 192) }),
+  });
+  const refund = body.refund;
+  if (!refund?.id || refund.status === 'REJECTED' || refund.status === 'FAILED') throw new SquareError(`Square refused the refund ${refund?.status ?? ''}`.trim(), 402);
+  return refund.id;
 }

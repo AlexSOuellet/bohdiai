@@ -9,6 +9,7 @@ const args = {
   locationId: 'LOC1',
   state: 'signed.note',
   fallbackUrl: 'https://app.bohdiai.com/manage/markets/m1/day?card=no-app',
+  currency: 'USD',
 };
 
 describe('squareHandOff', () => {
@@ -96,15 +97,20 @@ describe('saleMatches', () => {
   const sale = { state: 'COMPLETED', totalCents: 4250, currency: 'USD', locationId: 'LOC1', payments: [{ type: 'CARD', amountCents: 4250 }] };
 
   it('accepts a completed card sale for the exact total at the location', () => {
-    expect(saleMatches(sale, { totalCents: 4250, locationId: 'LOC1' })).toBe(true);
+    expect(saleMatches(sale, { totalCents: 4250, locationId: 'LOC1', currency: 'USD' })).toBe(true);
   });
 
   it('refuses anything else', () => {
-    expect(saleMatches({ ...sale, state: 'OPEN' }, { totalCents: 4250, locationId: 'LOC1' })).toBe(false);
-    expect(saleMatches(sale, { totalCents: 4251, locationId: 'LOC1' })).toBe(false);
-    expect(saleMatches(sale, { totalCents: 4250, locationId: 'LOC2' })).toBe(false);
-    expect(saleMatches({ ...sale, currency: 'CAD' }, { totalCents: 4250, locationId: 'LOC1' })).toBe(false);
-    expect(saleMatches({ ...sale, payments: [{ type: 'CASH', amountCents: 4250 }] }, { totalCents: 4250, locationId: 'LOC1' })).toBe(false);
+    expect(saleMatches({ ...sale, state: 'OPEN' }, { totalCents: 4250, locationId: 'LOC1', currency: 'USD' })).toBe(false);
+    expect(saleMatches(sale, { totalCents: 4251, locationId: 'LOC1', currency: 'USD' })).toBe(false);
+    expect(saleMatches(sale, { totalCents: 4250, locationId: 'LOC2', currency: 'USD' })).toBe(false);
+    expect(saleMatches({ ...sale, currency: 'CAD' }, { totalCents: 4250, locationId: 'LOC1', currency: 'USD' })).toBe(false);
+    expect(saleMatches({ ...sale, payments: [{ type: 'CASH', amountCents: 4250 }] }, { totalCents: 4250, locationId: 'LOC1', currency: 'USD' })).toBe(false);
+  });
+
+  it('takes a Canadian shop’s sale in its own dollars', () => {
+    expect(saleMatches({ ...sale, currency: 'CAD' }, { totalCents: 4250, locationId: 'LOC1', currency: 'cad' })).toBe(true);
+    expect(saleMatches(sale, { totalCents: 4250, locationId: 'LOC1', currency: 'CAD' })).toBe(false);
   });
 });
 

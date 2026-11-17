@@ -15,7 +15,7 @@ vi.mock('server-only', () => ({}));
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 vi.mock('@/lib/resend', () => ({ resend: () => ({ emails: { send } }), fromEmail: () => 'BohdiAI <site@example.com>' }));
 let shopPay: unknown = null;
-vi.mock('@/lib/paypal/online-pay', () => ({ onlinePay: async () => shopPay }));
+vi.mock('@/lib/storefront/online-pay', () => ({ onlinePay: async () => shopPay }));
 vi.mock('@/lib/forms/rate-limit', () => ({ formLimitResponse: async () => null }));
 vi.mock('@/lib/backend/features', () => ({ loadSiteFeatures: async () => features }));
 let promos: unknown[] = [];

@@ -17,6 +17,7 @@ import { ShorelineCartLink } from './ShorelineCartLink';
 import type { CartView, MarketInfoView, MarketShopView } from '@/lib/archetypes/content';
 import { ShorelineMarketBuyer } from './ShorelineMarketBuyer';
 import { OrderRequestForm } from '@/lib/storefront/OrderRequestForm';
+import { CheckoutReturned, returnedDone } from '@/lib/storefront/SquarePay';
 import { PhotoViewerProvider, Snapshot } from './PhotoViewer';
 import { Frame, Footer, nameParts, PortraitPrint, Print } from './ShorelineLanding';
 import { bioParagraphs, initials, marketDay, marketName, photoLabel, type CardData } from './data';
@@ -606,10 +607,11 @@ export function ShorelineCart({ site, cart, platformCredit = true }: { site: Sho
     <Frame look={site.card.look}>
       <Bar name={site.card.name} current="cart" cart account={site.account} W={W} />
       <SaleBanner sale={site.sale} W={W} />
-      <SyncCart ids={cart.lines.map((l) => l.id)} />
+      {!returnedDone(cart.returned) && <SyncCart ids={cart.lines.map((l) => l.id)} />}
       <PageHead title={C.title} />
       <main id="main" className="sl-cart">
-        {cart.lines.length === 0 ? (
+        {cart.returned !== undefined && <CheckoutReturned returned={cart.returned} w={C} numberClass="order-num" />}
+        {returnedDone(cart.returned) ? null : cart.lines.length === 0 ? (
           <div className="sl-empty">
             <p>{C.empty}</p>
             <a className="sl-btn" href="/shop">

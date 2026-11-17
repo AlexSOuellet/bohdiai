@@ -7,6 +7,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { CART_COOKIE, parseCart } from '@/lib/storefront/cart';
 import { PROMO_COOKIE } from '@/lib/storefront/promotions';
 import { loadCartView } from '@/lib/storefront/cart-view';
+import { squareReturn } from '@/lib/storefront/square-return';
 
 export function generateMetadata(): Promise<Metadata> {
   return storefrontMetadata({ path: '/cart', titleSpot: 'cart', noindex: true });
@@ -16,9 +17,10 @@ export function generateMetadata(): Promise<Metadata> {
  * The cart. A design that paints its own cart (the boutique) gets the shopper's
  * pieces from the cart cookie, priced from the catalog. Every other shop keeps
  * the empty-cart stub, in the site's own words, painted in its chrome, so the cart link in its nav has a
- * real destination.
+ * real destination. Back from Square's checkout page (`?order=`), the cart says
+ * what Square confirmed about that order, asked of Square by our server.
  */
-export default async function StorefrontCartPage() {
+export default async function StorefrontCartPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const headerStore = await headers();
   const tenantId = headerStore.get('x-tenant-id');
   if (tenantId === null) notFound();
@@ -26,7 +28,14 @@ export default async function StorefrontCartPage() {
   const jar = await cookies();
   const ids = parseCart(jar.get(CART_COOKIE)?.value);
   const code = jar.get(PROMO_COOKIE)?.value ?? null;
-  const designed = await renderArchetypeCart(tenantId, () => loadCartView(supabaseAdmin(), tenantId, ids, code === null ? null : decodeURIComponent(code)));
+  const back = (await searchParams)['order'];
+  const designed = await renderArchetypeCart(tenantId, async () => {
+    const [view, returned] = await Promise.all([
+      loadCartView(supabaseAdmin(), tenantId, ids, code === null ? null : decodeURIComponent(code)),
+      typeof back === 'string' ? squareReturn(supabaseAdmin(), tenantId, back) : Promise.resolve(null),
+    ]);
+    return returned === null ? view : { ...view, returned };
+  });
   if (designed !== null) return designed;
 
   const words = (await loadShopWords(tenantId)).cart;

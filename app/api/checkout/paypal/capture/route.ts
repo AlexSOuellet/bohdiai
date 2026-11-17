@@ -79,7 +79,15 @@ async function handle(req: Request) {
     p_currency: payment.currency,
     p_metadata: { capture_id: capture.captureId },
   });
-  if (recordError !== null) throw new Error(`record_online_payment failed: ${recordError.message}`);
+  if (recordError !== null) {
+    // It sold to someone else first (PayPal is switched off, 2026-11-04; Square gives
+    // the money back on its own, PayPal doesn't yet): say so and leave it for the maker.
+    if (recordError.code === 'P0028') {
+      logger.error('paypal checkout: paid for a piece that had sold', { tenantId, orderId: payment.order_id });
+      return NextResponse.json({ error: 'Sorry, a piece in your order sold just before your payment went through. The shop will give your money back.' }, { status: 409 });
+    }
+    throw new Error(`record_online_payment failed: ${recordError.message}`);
+  }
 
   // Tell the maker. The order is saved and paid; a failed email never undoes it.
   const { data: shop } = await db.from('tenants').select('business_name, contact_email').eq('id', tenantId).maybeSingle();

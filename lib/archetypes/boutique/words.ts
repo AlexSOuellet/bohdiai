@@ -175,6 +175,16 @@ export const NURSERY_WORD_SPOTS = {
     sent: '',
     error: '',
     errorNetwork: '',
+    /** Paying through the shop's own Square: the line over the form, the Pay button, while it opens Square's page, when it fails, and back from it ("{n}" is the order number): paid, not confirmed yet, the piece had sold so the money went back, or Square's order didn't match. */
+    payTitle: '',
+    payLede: '',
+    payButton: '',
+    payGoing: '',
+    payError: '',
+    paid: '',
+    payWaiting: '',
+    paySold: '',
+    payProblem: '',
   },
   footer: {
     empowered: '',

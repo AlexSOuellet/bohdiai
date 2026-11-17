@@ -16,7 +16,7 @@ import { logger } from '@/lib/logger';
 import { squareConfig } from '@/lib/square/config';
 import { cancelKeys, openLocations, type SquareLocation } from '@/lib/square/api';
 import { dropConnection, liveKey, setLocation } from '@/lib/square/connection';
-import { cardReturnUrl } from '@/lib/square/flow';
+import { cardReturnUrl, shopCurrency } from '@/lib/square/flow';
 import { CARD_SALE_MINUTES, CARD_SALE_PURPOSE, squareHandOff, type CardSaleLine, type CardSaleNote, type SquareHandOff } from '@/lib/square/pos';
 import { signNote } from '@/lib/square/vault';
 import { tablePrice } from '../markets/table-price';
@@ -137,6 +137,7 @@ export async function startCardSale(eventId: string, lines: readonly CardSaleLin
       locationId: link.location_id,
       state: await signNote(CARD_SALE_PURPOSE, note, config.tokenKey),
       fallbackUrl: `${new URL(cardReturnUrl(siteUrl)).origin}${back}?card=no-app`,
+      currency: await shopCurrency(supabaseAdmin(), site.tenantId),
     }),
   };
 }

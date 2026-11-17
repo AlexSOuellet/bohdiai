@@ -61,6 +61,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<'/manage/
       <SquarePanel
         link={link}
         ready={squareConfig() !== null}
+        online={online}
         outcome={typeof outcome === 'string' ? (SQUARE_OUTCOME[outcome] ?? null) : null}
       />
       {online && <StripePanel outcome={typeof stripeOutcome === 'string' ? (STRIPE_OUTCOME[stripeOutcome] ?? null) : null} />}

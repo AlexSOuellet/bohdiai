@@ -104,6 +104,13 @@ export async function alreadyRecorded(admin: SupabaseClient<Database>, tenantId:
   return (byOrder.data ?? []).length > 0;
 }
 
+/** The shop's currency (USD unless it says otherwise). */
+export async function shopCurrency(admin: SupabaseClient<Database>, tenantId: string): Promise<string> {
+  const { data, error } = await admin.from('tenants').select('currency').eq('id', tenantId).maybeSingle();
+  if (error !== null) throw new Error(`Could not read the shop's currency: ${error.message}`);
+  return (data?.currency || 'USD').toUpperCase();
+}
+
 /** Square's own word on a card sale, before anything is recorded. */
 export async function confirmCardSale(
   admin: SupabaseClient<Database>,
@@ -119,7 +126,7 @@ export async function confirmCardSale(
   if (await alreadyRecorded(admin, tenantId, saleNonce, orderId)) return { ok: false, reason: 'already-recorded' };
   const sale = await findSale(config, key.token, orderId, fetcher);
   if (sale === null) return { ok: false, reason: 'not-found' };
-  if (!saleMatches(sale, { totalCents, locationId: key.locationId })) return { ok: false, reason: 'mismatch' };
+  if (!saleMatches(sale, { totalCents, locationId: key.locationId, currency: await shopCurrency(admin, tenantId) })) return { ok: false, reason: 'mismatch' };
   return { ok: true, paymentIds: sale.payments.filter((p) => p.type === 'CARD').map((p) => p.id) };
 }
 

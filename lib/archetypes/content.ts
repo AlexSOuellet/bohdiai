@@ -121,15 +121,33 @@ export interface CartView {
   codes: boolean;
   /** The code the shopper entered: whether it's the one taking money off, or why not. */
   code?: { value: string; applied: boolean; message?: string | undefined } | undefined;
-  /** The shop takes payment online through its own PayPal: what the PayPal button needs (nothing secret). */
+  /** The shop takes payment online, through its own Square or PayPal: what the pay button needs (nothing secret). */
   pay?: OnlinePay | undefined;
+  /** The shopper is back from Square's checkout page: what Square said about their order. */
+  returned?: CheckoutReturn | undefined;
 }
 
+/** How the cart takes payment online. */
+export type OnlinePay = PayPalPay | SquarePay;
+
 /** What the cart's PayPal button needs: BohdiAI's public PayPal app ID, the shop's PayPal account, the shop's currency. */
-export interface OnlinePay {
+export interface PayPalPay {
+  kind: 'paypal';
   clientId: string;
   merchantId: string;
   currency: string;
+}
+
+/** The cart's Pay button opens Square's own checkout page, in the shop's own Square. */
+export interface SquarePay {
+  kind: 'square';
+}
+
+/** Back from Square's page: paid; not confirmed yet; the piece had sold, so the money
+ *  went back; or Square's order didn't match ours, so nothing was recorded. */
+export interface CheckoutReturn {
+  kind: 'paid' | 'waiting' | 'sold' | 'failed';
+  orderNumber: string;
 }
 
 /** A market's own shop page (Market POS piece 2): the pieces she brought, and

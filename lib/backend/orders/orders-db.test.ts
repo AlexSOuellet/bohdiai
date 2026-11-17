@@ -122,6 +122,7 @@ describe('order reads', () => {
             { name_snapshot: 'Rosie', unit_price_cents: 6000, quantity: 2, created_at: '2026-10-07T16:00:02Z' },
             { name_snapshot: 'Theo', unit_price_cents: 12000, quantity: 1, created_at: '2026-10-07T16:00:01Z' },
           ],
+          payments: [],
         },
         {
           id: 'o2',
@@ -136,12 +137,33 @@ describe('order reads', () => {
           discount_cents: 50,
           discount_label: null,
           order_items: [],
+          payments: [{ processor: 'square', payment_type: 'charge', status: 'succeeded' }],
+        },
+        {
+          id: 'o3',
+          order_number: '1003',
+          created_at: '2026-10-07T18:00:00Z',
+          status: 'pending',
+          customer_name: 'Lee',
+          customer_email: 'l@example.com',
+          customer_phone: null,
+          customer_note: null,
+          total_cents: 500,
+          discount_cents: 0,
+          discount_label: null,
+          order_items: [],
+          payments: [{ processor: 'square', payment_type: 'charge', status: 'pending' }],
         },
       ],
       error: null,
       count: null,
     };
-    const [a, b] = await listOrders(fakeDb() as never, 't1');
+    const shown = await listOrders(fakeDb() as never, 't1');
+    // Lee went to Square's page and hasn't paid: not an order yet.
+    expect(shown.map((o) => o.number)).toEqual(['1001', '1002']);
+    const [a, b] = shown;
+    expect(a?.via).toBeUndefined();
+    expect(b).toMatchObject({ via: 'Paid online by card', paidOnline: true });
     expect(a).toMatchObject({ status: 'pending', phone: '', note: '', total: '$108', discount: { label: 'MARKET10', amount: '$12' } });
     expect(a?.items).toEqual([
       { name: 'Theo', price: '$120' },
@@ -156,7 +178,8 @@ describe('order reads', () => {
     await expect(countNewOrders(fakeDb() as never, 't1')).rejects.toThrow('down');
   });
   it('counts new orders for the home screen', async () => {
-    state.result = { data: null, error: null, count: 2 };
+    const row = (status: string) => ({ status: 'pending', payments: status === '' ? [] : [{ processor: 'square', payment_type: 'charge', status }] });
+    state.result = { data: [row(''), row('failed'), row('pending')], error: null, count: null };
     expect(await ordersHome.load('t1')).toMatchObject({ tiles: [{ value: '2' }] });
     state.result = { data: null, error: null, count: null };
     expect(await countNewOrders(fakeDb() as never, 't1')).toBe(0);

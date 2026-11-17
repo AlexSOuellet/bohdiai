@@ -6,7 +6,7 @@ import { formLimitResponse } from '@/lib/forms/rate-limit';
 import { orderRequestEmail, orderRequestSchema } from '@/lib/storefront/order-request';
 import { placeCartOrder } from '@/lib/storefront/place-order';
 import { signedInBuyerProfile } from '@/lib/buyers/session';
-import { onlinePay } from '@/lib/paypal/online-pay';
+import { onlinePay } from '@/lib/storefront/online-pay';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,7 +51,7 @@ async function handle(req: Request) {
   const db = supabaseAdmin();
   // A shop that takes payment online takes orders only through its checkout.
   if ((await onlinePay(db, tenantId)) !== null) {
-    return NextResponse.json({ error: 'This shop takes payment at checkout. Please pay with the PayPal button.' }, { status: 409 });
+    return NextResponse.json({ error: 'This shop takes payment at checkout. Please pay with the button in your cart.' }, { status: 409 });
   }
   const placed = await placeCartOrder(db, tenantId, input, { verb: 'send' }, await signedInBuyerProfile(tenantId));
   if (!placed.ok) {

@@ -12,7 +12,7 @@ describe('emailSamples', () => {
   ) as IntakeWords;
   it('shows every maker email in the shared design, with images from the address given', () => {
     const samples = emailSamples(words, 'http://localhost:3000');
-    expect(samples).toHaveLength(17);
+    expect(samples).toHaveLength(19);
     expect(samples.map((s) => s.title)).toEqual(
       expect.arrayContaining([
         'Kept their plan',

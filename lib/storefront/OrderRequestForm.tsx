@@ -3,9 +3,10 @@
 /**
  * The cart's "send my order" form (Full), shared by every design with a cart.
  * Without online payment it posts the cart's pieces and the shopper's details to
- * /api/order-request and nothing is charged. When the shop takes PayPal (`pay`),
- * the same details go with the PayPal button instead, and the order is placed when
- * the payment goes through. On success the cart empties and the order number shows.
+ * /api/order-request and nothing is charged. When the shop takes payment online
+ * (`pay`), the same details go with the Pay button instead: to Square's own
+ * checkout page, or with PayPal's button; the order counts as paid only once the
+ * processor confirms it. On success the cart empties and the order number shows.
  * Every failure says so.
  */
 import { useRef, useState, type FormEvent, type ReactElement } from 'react';
@@ -13,6 +14,7 @@ import type { OnlinePay } from '@/lib/archetypes/content';
 import { ClearCart } from '@/lib/storefront/CartControls';
 import { fill } from '@/lib/site-words/words';
 import { PayPalButtons } from './PayPalButtons';
+import { SquarePayButton } from './SquarePay';
 
 /** The site's words the order form shows (each design keeps them under its own spots). */
 export type OrderFormWords = {
@@ -33,6 +35,9 @@ export type OrderFormWords = {
   payUnavailable: string;
   /** Paid: the thank-you under the order number. */
   paid: string;
+  /** Paying through Square: the Pay button, and while it opens Square's page. */
+  payButton: string;
+  payGoing: string;
 };
 
 type State = { kind: 'idle' } | { kind: 'sending' } | { kind: 'sent'; orderNumber: string | null; paid: boolean } | { kind: 'error'; message: string };
@@ -49,7 +54,7 @@ export function OrderRequestForm({
   w: OrderFormWords;
   /** The hidden spam trap's label. */
   honeypot: string;
-  /** The shop takes payment through its own PayPal. */
+  /** The shop takes payment through its own Square or PayPal. */
   pay?: OnlinePay | null;
 }): ReactElement {
   const [state, setState] = useState<State>({ kind: 'idle' });
@@ -73,7 +78,7 @@ export function OrderRequestForm({
 
   async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    // Paying online, the order only goes through the PayPal button (Enter never sends it unpaid).
+    // Paying online, the order only goes through the Pay button (Enter never sends it unpaid).
     if (pay !== null) return;
     const data = new FormData(e.currentTarget);
     setState({ kind: 'sending' });
@@ -142,6 +147,8 @@ export function OrderRequestForm({
         <button className="bc-btn" type="submit" disabled={state.kind === 'sending'}>
           {state.kind === 'sending' ? C.sending : C.send}
         </button>
+      ) : pay.kind === 'square' ? (
+        <SquarePayButton details={details} w={C} />
       ) : (
         <PayPalButtons pay={pay} details={details} w={C} onPaid={(orderNumber) => setState({ kind: 'sent', orderNumber, paid: true })} />
       )}

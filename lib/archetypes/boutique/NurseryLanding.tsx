@@ -33,6 +33,7 @@ import {
   SyncCart,
 } from '@/lib/storefront/CartControls';
 import { NurseryOrderForm } from './NurseryOrderForm';
+import { CheckoutReturned, returnedDone } from '@/lib/storefront/SquarePay';
 import { NurseryMarketBuyer } from './NurseryMarketBuyer';
 import { PhotoViewerProvider, Snapshot } from '@/lib/archetypes/card/PhotoViewer';
 import {
@@ -801,7 +802,7 @@ export function NurseryCart({
   const w = data.words;
   return (
     <Frame chrome={{ data, logoUrl }} onHome={false}>
-      <SyncCart ids={cart.lines.map((l) => l.id)} />
+      {!returnedDone(cart.returned) && <SyncCart ids={cart.lines.map((l) => l.id)} />}
       <section className="nn-cart-page" aria-labelledby="nn-cart-h">
         <div className="nn-wrap">
           <a className="nn-back" href="/shop">
@@ -811,7 +812,8 @@ export function NurseryCart({
           <h1 className="nn-h2" id="nn-cart-h">
             {w.cart.title}
           </h1>
-          {cart.lines.length === 0 ? (
+          {cart.returned !== undefined && <CheckoutReturned returned={cart.returned} w={w.cart} numberClass="nn-order__num" />}
+          {returnedDone(cart.returned) ? null : cart.lines.length === 0 ? (
             <div className="nn-cart__empty">
               <p>{w.cart.empty}</p>
               <a className="nn-btn" href="/shop">
@@ -910,8 +912,8 @@ export function NurseryCart({
               </div>
               <div className="nn-gift nn-cart__send">
                 <div className="nn-gift__side">
-                  <h2 className="nn-h2">{w.cart.sendTitle}</h2>
-                  <p>{w.cart.sendLede}</p>
+                  <h2 className="nn-h2">{cart.pay === undefined ? w.cart.sendTitle : w.cart.payTitle}</h2>
+                  <p>{cart.pay === undefined ? w.cart.sendLede : w.cart.payLede}</p>
                 </div>
                 <div className="nn-gift__form">
                   {blocked ? (
@@ -923,6 +925,7 @@ export function NurseryCart({
                       listingIds={ready.map((l) => l.id)}
                       w={w.cart}
                       code={cart.code?.applied === true ? cart.code.value : null}
+                      square={cart.pay?.kind === 'square'}
                     />
                   )}
                 </div>
